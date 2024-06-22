@@ -1,9 +1,8 @@
 ---
 layout: post
-title: Sequence to sequence translation
-tags: [deep learning, rnn, transformer, translation, language, sequences]
+title: Sequence to sequence translation (part 1)
+tags: [deep learning, rnn, translation, language, sequences]
 comments: true
 mathjax: true
 ---
 
-Placeholder for post!!
