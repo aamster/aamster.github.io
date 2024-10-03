@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://aamster.github.io/al-folio/sitemap.xml
+Sitemap: https://aamster.github.io/sitemap.xml
