@@ -1,13 +1,12 @@
 ---
-layout: post
+layout: distill
 title: '"I have socks" or sequence to sequence translation (part 1)'
 tags: 
     - deep learning
     - rnn 
     - machine translation
     - sequences
-scholar:
-  bibliography: 2024-10-03-sequence_to_sequence_translation.bib
+bibliography: 2024-10-03-sequence_to_sequence_translation.bib
 toc:
   sidebar: left
 ---
