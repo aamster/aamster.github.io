@@ -615,7 +615,7 @@ dresser -> socks
 
 We would give this a score of 0, since no word matches up. In fact it is exceedingly rare for 2 translations to match a given translation exactly.
 
-BLEU score is the standard metric used to evaluate translation models. It was proposed in [Papineni2002]. The goal of the BLEU score is to be automated and to correlate with how well a human would judge the translation quality of a given translation to be.
+BLEU score is the standard metric used to evaluate translation models. It was proposed in <d-cite key="10.3115/1073083.1073135"></d-cite>. The goal of the BLEU score is to be automated and to correlate with how well a human would judge the translation quality of a given translation to be.
 
 See this interesting figure in the paper in which the authors found the bleu score to correlate with how bilingual humans rated the quality of a translation:
 
@@ -676,7 +676,7 @@ $4$-grams
 
 So in this case all the $n$-gram precisions up to $4$ are $1.0$. But the translation is not perfect, so how do we penalize it?
 
-A brevity penalty is calculated. The way it is calculated is outside of the scope of this article. See the [Papineni2002] for the equation. In this case the brevity penalty is $0.47$. The brevity penalty is multiplied with the $n$-gram precisions to get a final bleu score of $0.47$.
+A brevity penalty is calculated. The way it is calculated is outside of the scope of this article. See the <d-cite key="10.3115/1073083.1073135"></d-cite> for the equation. In this case the brevity penalty is $0.47$. The brevity penalty is multiplied with the $n$-gram precisions to get a final bleu score of $0.47$.
 
 ### Bleu score problems
 
