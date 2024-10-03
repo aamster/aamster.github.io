@@ -1,0 +1,160 @@
+---
+---
+References
+==========
+
+@inproceedings{DBLP:journals/corr/BahdanauCB14,
+  author       = {Dzmitry Bahdanau and
+                  Kyunghyun Cho and
+                  Yoshua Bengio},
+  editor       = {Yoshua Bengio and
+                  Yann LeCun},
+  title        = {Neural Machine Translation by Jointly Learning to Align and Translate},
+  booktitle    = {3rd International Conference on Learning Representations, {ICLR} 2015,
+                  San Diego, CA, USA, May 7-9, 2015, Conference Track Proceedings},
+  year         = {2015},
+  url          = {http://arxiv.org/abs/1409.0473},
+  timestamp    = {Wed, 17 Jul 2019 10:40:54 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/BahdanauCB14.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{10.5555/2969033.2969173,
+author = {Sutskever, Ilya and Vinyals, Oriol and Le, Quoc V.},
+title = {Sequence to sequence learning with neural networks},
+year = {2014},
+publisher = {MIT Press},
+address = {Cambridge, MA, USA},
+abstract = {Deep Neural Networks (DNNs) are powerful models that have achieved excellent performance on difficult learning tasks. Although DNNs work well whenever large labeled training sets are available, they cannot be used to map sequences to sequences. In this paper, we present a general end-to-end approach to sequence learning that makes minimal assumptions on the sequence structure. Our method uses a multilayered Long Short-Term Memory (LSTM) to map the input sequence to a vector of a fixed dimensionality, and then another deep LSTM to decode the target sequence from the vector. Our main result is that on an English to French translation task from the WMT-14 dataset, the translations produced by the LSTM achieve a BLEU score of 34.8 on the entire test set, where the LSTM's BLEU score was penalized on out-of-vocabulary words. Additionally, the LSTM did not have difficulty on long sentences. For comparison, a phrase-based SMT system achieves a BLEU score of 33.3 on the same dataset. When we used the LSTM to rerank the 1000 hypotheses produced by the aforementioned SMT system, its BLEU score increases to 36.5, which is close to the previous state of the art. The LSTM also learned sensible phrase and sentence representations that are sensitive to word order and are relatively invariant to the active and the passive voice. Finally, we found that reversing the order of the words in all source sentences (but not target sentences) improved the LSTM's performance markedly, because doing so introduced many short term dependencies between the source and the target sentence which made the optimization problem easier.},
+booktitle = {Proceedings of the 27th International Conference on Neural Information Processing Systems - Volume 2},
+pages = {3104–3112},
+numpages = {9},
+location = {Montreal, Canada},
+series = {NIPS'14}
+}
+
+@inproceedings{10.5555/3295222.3295349,
+author = {Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N. and Kaiser, \L{}ukasz and Polosukhin, Illia},
+title = {Attention is all you need},
+year = {2017},
+isbn = {9781510860964},
+publisher = {Curran Associates Inc.},
+address = {Red Hook, NY, USA},
+abstract = {The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles, by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.0 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature.},
+booktitle = {Proceedings of the 31st International Conference on Neural Information Processing Systems},
+pages = {6000–6010},
+numpages = {11},
+location = {Long Beach, California, USA},
+series = {NIPS'17}
+}
+
+@inproceedings{DBLP:conf/emnlp/ChoMGBBSB14,
+  author       = {Kyunghyun Cho and
+                  Bart van Merrienboer and
+                  {\c{C}}aglar G{\"{u}}l{\c{c}}ehre and
+                  Dzmitry Bahdanau and
+                  Fethi Bougares and
+                  Holger Schwenk and
+                  Yoshua Bengio},
+  editor       = {Alessandro Moschitti and
+                  Bo Pang and
+                  Walter Daelemans},
+  title        = {Learning Phrase Representations using {RNN} Encoder-Decoder for Statistical
+                  Machine Translation},
+  booktitle    = {Proceedings of the 2014 Conference on Empirical Methods in Natural
+                  Language Processing, {EMNLP} 2014, October 25-29, 2014, Doha, Qatar,
+                  {A} meeting of SIGDAT, a Special Interest Group of the {ACL}},
+  pages        = {1724--1734},
+  publisher    = {{ACL}},
+  year         = {2014},
+  url          = {https://doi.org/10.3115/v1/d14-1179},
+  doi          = {10.3115/V1/D14-1179},
+  timestamp    = {Fri, 06 Aug 2021 00:40:23 +0200},
+  biburl       = {https://dblp.org/rec/conf/emnlp/ChoMGBBSB14.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{cho-etal-2014-properties,
+    title = "On the Properties of Neural Machine Translation: Encoder{--}Decoder Approaches",
+    author = {Cho, Kyunghyun  and
+      van Merri{\"e}nboer, Bart  and
+      Bahdanau, Dzmitry  and
+      Bengio, Yoshua},
+    editor = "Wu, Dekai  and
+      Carpuat, Marine  and
+      Carreras, Xavier  and
+      Vecchi, Eva Maria",
+    booktitle = "Proceedings of {SSST}-8, Eighth Workshop on Syntax, Semantics and Structure in Statistical Translation",
+    month = oct,
+    year = "2014",
+    address = "Doha, Qatar",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/W14-4012",
+    doi = "10.3115/v1/W14-4012",
+    pages = "103--111",
+}
+
+@inproceedings{bojar-etal-2014-findings,
+    title = "Findings of the 2014 Workshop on Statistical Machine Translation",
+    author = "Bojar, Ond{\v{r}}ej  and
+      Buck, Christian  and
+      Federmann, Christian  and
+      Haddow, Barry  and
+      Koehn, Philipp  and
+      Leveling, Johannes  and
+      Monz, Christof  and
+      Pecina, Pavel  and
+      Post, Matt  and
+      Saint-Amand, Herve  and
+      Soricut, Radu  and
+      Specia, Lucia  and
+      Tamchyna, Ale{\v{s}}",
+    editor = "Bojar, Ond{\v{r}}ej  and
+      Buck, Christian  and
+      Federmann, Christian  and
+      Haddow, Barry  and
+      Koehn, Philipp  and
+      Monz, Christof  and
+      Post, Matt  and
+      Specia, Lucia",
+    booktitle = "Proceedings of the Ninth Workshop on Statistical Machine Translation",
+    month = jun,
+    year = "2014",
+    address = "Baltimore, Maryland, USA",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/W14-3302",
+    doi = "10.3115/v1/W14-3302",
+    pages = "12--58",
+}
+
+@article{radford2019language,
+  added-at = {2022-09-02T13:35:58.000+0200},
+  author = {Radford, Alec and Wu, Jeffrey and Child, Rewon and Luan, David and Amodei, Dario and Sutskever, Ilya and others},
+  biburl = {https://www.bibsonomy.org/bibtex/2c692ad1906553fce788d166721041c70/msteininger},
+  interhash = {61ea7e007d6c95171a2ff3396b1af7d9},
+  intrahash = {c692ad1906553fce788d166721041c70},
+  journal = {OpenAI blog},
+  keywords = {language_model multi-task nlp},
+  number = 8,
+  pages = 9,
+  timestamp = {2022-09-02T13:35:58.000+0200},
+  title = {Language models are unsupervised multitask learners},
+  volume = 1,
+  year = 2019
+}
+
+@inproceedings{10.3115/1073083.1073135,
+author = {Papineni, Kishore and Roukos, Salim and Ward, Todd and Zhu, Wei-Jing},
+title = {BLEU: a method for automatic evaluation of machine translation},
+year = {2002},
+publisher = {Association for Computational Linguistics},
+address = {USA},
+url = {https://doi.org/10.3115/1073083.1073135},
+doi = {10.3115/1073083.1073135},
+abstract = {Human evaluations of machine translation are extensive but expensive. Human evaluations can take months to finish and involve human labor that can not be reused. We propose a method of automatic machine translation evaluation that is quick, inexpensive, and language-independent, that correlates highly with human evaluation, and that has little marginal cost per run. We present this method as an automated understudy to skilled human judges which substitutes for them when there is need for quick or frequent evaluations.},
+booktitle = {Proceedings of the 40th Annual Meeting on Association for Computational Linguistics},
+pages = {311–318},
+numpages = {8},
+location = {Philadelphia, Pennsylvania},
+series = {ACL '02}
+}
