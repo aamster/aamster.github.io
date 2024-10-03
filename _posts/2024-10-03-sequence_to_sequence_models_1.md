@@ -1,6 +1,6 @@
 ---
 layout: distill
-title: '"I have socks" or sequence to sequence translation (part 1)'
+title: "\"I have socks\" or sequence to sequence translation (part 1)"
 tags: 
     - deep learning
     - rnn 
