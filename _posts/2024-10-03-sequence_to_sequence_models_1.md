@@ -9,14 +9,14 @@ tags:
 scholar:
   bibliography: 2024-10-03-sequence_to_sequence_translation.bib
 toc:
-  beginning: true
+  sidebar: left
 ---
 
 In this article, I'll introduce language modeling using deep learning and will focus on the problem of translation.
 
 I'll cover how language was modeled using deep learning prior to transformers, which was by using recurrent neural networks (RNNs).
 
-I'll compare  {% cite DBLP:journals/corr/BahdanauCB14 %} which introduces the idea of attention in RNNs, with a paper published around the same time {% cite 10.5555/2969033.2969173 %} which does not use attention. I'll explain in detail what attention is and why it was introduced, as well as try to reproduce the results from these papers. The results from these papers are actually contradictory; {% cite 10.5555/2969033.2969173 %} reported better performance than {% cite DBLP:journals/corr/BahdanauCB14 %}, however the latter is well known and influential for introducing attention. This is surprising to me, and shows that researchers found the idea of attention to be useful regardless of the performance reported in these papers. 
+I'll compare  <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite> which introduces the idea of attention in RNNs, with a paper published around the same time <d-cite key="10.5555/2969033.2969173"></d-cite> which does not use attention. I'll explain in detail what attention is and why it was introduced, as well as try to reproduce the results from these papers. The results from these papers are actually contradictory; <d-cite key="10.5555/2969033.2969173"></d-cite> reported better performance than <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite>, however the latter is well known and influential for introducing attention. This is surprising to me, and shows that researchers found the idea of attention to be useful regardless of the performance reported in these papers. 
 
 In the next article I'll cover how language is modeled today using transformers. 
 
@@ -85,7 +85,7 @@ Translation using neural network models is challenging for several reasons.
 
 ### Language involves sequences of arbitrary length
     
-According to {% cite 10.5555/2969033.2969173 %}
+According to <d-cite key="10.5555/2969033.2969173"></d-cite>
 > Despite their flexibility and power, DNNs [Deep Neural Nets] can only be applied to problems whose inputs and targets
 can be sensibly encoded with vectors of fixed dimensionality. It is a significant limitation, since
 many important problems are best expressed with sequences whose lengths are not known a-priori.
@@ -106,19 +106,19 @@ contains a lot of information. How do we encode all this information so that we 
 
 In fact, early models would do better at shorter sentences than longer ones because of this issue. The model was able to encode the meaning only for very short inputs but tended to not properly capture longer inputs.
 
-{% cite cho-etal-2014-properties %} analysis of early DNN translation models states:
+<d-cite key="cho-etal-2014-properties"></d-cite> analysis of early DNN translation models states:
 > Our analysis shows that the performance of
 the neural machine translation model degrades
 quickly as the length of a source sentence increases. 
 
  ![bleu vs sentence len](/assets/img/2024-06-22-sequence_to_sequence_translation/rnn_enc_decreasing_perf_sent_len.png)
 
-However, {% cite 10.5555/2969033.2969173 %} states 
+However, <d-cite key="10.5555/2969033.2969173"></d-cite> states 
 > We were surprised to discover that the LSTM did well on long sentences
 
  ![Sutskever bleu vs sentence len](/assets/img/2024-06-22-sequence_to_sequence_translation/sutskever_sent_len.png)
 
-And then again in the seminal paper {% cite DBLP:journals/corr/BahdanauCB14 %}, 
+And then again in the seminal paper <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite>, 
 which I'll discuss in more detail later shows the same problem, that the model struggles with longer sentences:
 
  ![Bhadanau perf \label{Figure 2}](/assets/img/2024-06-22-sequence_to_sequence_translation/bhadanau_perf.png)
@@ -140,7 +140,7 @@ So a large vocabulary increases memory requirements by the model due to the incr
 as well as the increase in number of neurons for predicting the output token, which is usually a linear transformation.
 
 According to the website [open source Shakespeare](https://www.opensourceshakespeare.org/statistics/) there are 28,829 unique words in all of Shakespeare's works, and apparently 40% of those words are used only once.
-That is a lot of words, but relatively modern LLMs (e.g. GPT2) use a token size of ~50,000[^{% cite radford2019language %}, since these models need to understand more than just the vocabulary of Shakespeare. 
+That is a lot of words, but relatively modern LLMs (e.g. GPT2) use a token size of ~50,000[^<d-cite key="radford2019language"></d-cite>, since these models need to understand more than just the vocabulary of Shakespeare. 
 
 Large vocabulary sizes also mean that we need a very large dataset in order to capture enough examples for every token 
 in the vocabulary in order to train each token sufficiently. For example rarer tokens might be undertrained.
@@ -189,11 +189,11 @@ So this involves 3 main steps:
 
 We would like a machine learning model that can do steps (2) and (3) above.
 
-The encoder-decoder architecture as proposed by{% cite 10.5555/2969033.2969173 %} does just this. 
+The encoder-decoder architecture as proposed by<d-cite key="10.5555/2969033.2969173"></d-cite> does just this. 
 
 The encoder processes and compresses the input into a meaningful representation, a fixed length vector. The decoder then takes this meaningful representation and then generates the output 1 token at a time.
 
-In {% cite 10.5555/2969033.2969173 %} both the encoder and decoder are RNNs, (or more specifically a variant called LSTM). Let's take a look at how an RNN works.
+In <d-cite key="10.5555/2969033.2969173"></d-cite> both the encoder and decoder are RNNs, (or more specifically a variant called LSTM). Let's take a look at how an RNN works.
 
 ## RNNs
 
@@ -444,7 +444,7 @@ It might also be useful to process a sequence in the forwards direction and in t
 
 So far we've discussed how an RNN can be used to process the source sequence. What about translation? To do translation, we have to add an additional step.
 
-The proposed architecture is the so-called encoder-decoder architecture. The idea is that an RNN processes the input sequence, as we've shown above. Then another RNN, the "decoder", takes the hidden state of the "encoder" RNN as input and tries to predict the correct translated token at each timestep. From {% cite DBLP:conf/emnlp/ChoMGBBSB14 %}:
+The proposed architecture is the so-called encoder-decoder architecture. The idea is that an RNN processes the input sequence, as we've shown above. Then another RNN, the "decoder", takes the hidden state of the "encoder" RNN as input and tries to predict the correct translated token at each timestep. From <d-cite key="DBLP:conf/emnlp/ChoMGBBSB14"></d-cite>:
 
 > The proposed neural network architecture, which
 we will refer to as an RNN Encoder–Decoder, consists of two recurrent neural networks (RNN) that
@@ -490,13 +490,13 @@ But what if the sentence was
 
 It might be difficult to encode all of the meaning into a fixed length vector representation of numbers so that the decoder can produce a correct translation. It is sort of like the game of "telephone"; the meaning and nuances would be lost in translation.
 
-This is the same pattern that {% cite cho-etal-2014-properties %} observed, see \ref{mylabel}
+This is the same pattern that <d-cite key="cho-etal-2014-properties"></d-cite> observed, see \ref{mylabel}
 
  ![rnn sentence length bad](/assets/img/2024-06-22-sequence_to_sequence_translation/rnn_sentence_length_bad.png)
 
 The bleu score on the vertical axis is a measure of translation quality, which I'll discuss later in the article. Notice how as sentence length increases there is an exponential dropoff in translation quality.
 
-{% cite DBLP:journals/corr/BahdanauCB14 %} addressed this in their now famous paper "NEURAL MACHINE TRANSLATION BY JOINTLY LEARNING TO ALIGN AND TRANSLATE". 
+<d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite> addressed this in their now famous paper "NEURAL MACHINE TRANSLATION BY JOINTLY LEARNING TO ALIGN AND TRANSLATE". 
 
 This paper is cited as the paper that introduced attention in neural networks. Attention is the backbone of the transformer architecture which is the architecture used to train LLMs, so it's sort of a big deal.
 
@@ -512,7 +512,7 @@ In the following plot, they compared an encoder-decoder model without attention,
 
 Attention, as the name implies is giving the model the ability to pay attention to certain parts of the input. 
 
-While {% cite DBLP:journals/corr/BahdanauCB14 %} was the paper to popularize the idea of attention, it was refined and simplified in {% cite 10.5555/3295222.3295349 %}, and the latter is what is typically used. I'll go over both versions of attention.
+While <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite> was the paper to popularize the idea of attention, it was refined and simplified in <d-cite key="10.5555/3295222.3295349"></d-cite>, and the latter is what is typically used. I'll go over both versions of attention.
 
 ### Bahdanau (additive) attention
 
@@ -564,7 +564,7 @@ When people today refer to "attention" they are generally referring to the scale
 
 You may have noticed that the additive attention is not that straightforward. Why are we adding the decoder hidden state with the encoder hidden state at each timestep? 
 
-{% cite 10.5555/3295222.3295349 %} in their influential paper "Attention is all you need" reformulate attention to be the following, which is the basis of the transformer architecture.
+<d-cite key="10.5555/3295222.3295349"></d-cite> in their influential paper "Attention is all you need" reformulate attention to be the following, which is the basis of the transformer architecture.
 
 $$
 attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V
@@ -697,11 +697,11 @@ Regardless, bleu score is the standard for evaluating machine translations in an
 
 # Experiments and results
 
-Now I'll actually implement both the RNN encoder-decoder model from {% cite 10.5555/2969033.2969173 %} and the RNN encoder-decoder model with attention from {% cite DBLP:journals/corr/BahdanauCB14 %}, evaluate it on the French to English translation task of the {% cite bojar-etal-2014-findings %} dataset, and compare results to the papers.
+Now I'll actually implement both the RNN encoder-decoder model from <d-cite key="10.5555/2969033.2969173"></d-cite> and the RNN encoder-decoder model with attention from <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite>, evaluate it on the French to English translation task of the <d-cite key="bojar-etal-2014-findings"></d-cite> dataset, and compare results to the papers.
 
 ## Dataset
 
-In {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %}, they use the {% cite bojar-etal-2014-findings %} (Workshop on Machine Translation) English-French parallel corpora dataset which contains the following:
+In <d-cite key="10.5555/2969033.2969173"></d-cite> and <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite>, they use the <d-cite key="bojar-etal-2014-findings"></d-cite> (Workshop on Machine Translation) English-French parallel corpora dataset which contains the following:
 
 - Europarl
     - Professional translations of European parliment
@@ -746,7 +746,7 @@ English:
 
 I used an encoder-decoder model using a GRU in both the encoder and decoder. The encoder is bidirectional. The hidden state size in the forward and backward directions of the encoder is $1000$ and in the decoder is $1000$. The embedding dimensionality in both the encoder and decoder is $1000$. Both the encoder and decoder have $4$ layers. For attention, I used the scaled dot-product attention with $d_v$ equal to $1000$. The source vocab size and target vocab size were set to $30,000$. The models with attention and without attention contains ~$189M$ trainable params.
 
-For comparison, {% cite 10.5555/2969033.2969173 %} used bidirectional LSTM instead of GRU. The vocab sizes were much larger at $160,000$ for the source and $80,000$ for the target. Their model contain $384M$ params. To the best of my knowledge the attention model implemented is approximately equal to {% cite DBLP:journals/corr/BahdanauCB14 %}, but they leave out some implementation details, so I cannot say for sure.
+For comparison, <d-cite key="10.5555/2969033.2969173"></d-cite> used bidirectional LSTM instead of GRU. The vocab sizes were much larger at $160,000$ for the source and $80,000$ for the target. Their model contain $384M$ params. To the best of my knowledge the attention model implemented is approximately equal to <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite>, but they leave out some implementation details, so I cannot say for sure.
 
 ## Training details
 
@@ -766,7 +766,7 @@ Results are reported on the WMT'14 test set which contained 3003 english-french 
 
  ![attention vs no attention bleu](/assets/img/2024-06-22-sequence_to_sequence_translation/attention_vs_no_attention_bleu.png)
 
-While the model with attention has better overall performance than the model without, we are not able to reproduce a decrease in performance as the number of input tokens increases. {% cite 10.5555/2969033.2969173 %} also showed that their model without attention is robust to an increase in sentence length even without attention. 
+While the model with attention has better overall performance than the model without, we are not able to reproduce a decrease in performance as the number of input tokens increases. <d-cite key="10.5555/2969033.2969173"></d-cite> also showed that their model without attention is robust to an increase in sentence length even without attention. 
 
 ## Random examples
 
@@ -850,10 +850,10 @@ We can see from the figure below that beam search in general improves performanc
 
 ## <a name="tokenization"></a>Tokenization
 
-In {% cite DBLP:journals/corr/BahdanauCB14 %}, tokenization was treated as an after-thought. They say 
+In <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite>, tokenization was treated as an after-thought. They say 
 > After a usual tokenization, ...
 
-However I soon realized that tokenization is an important topic and can influence the model in many ways. Curious what SOTA LLMs use, I found that it is more common to use an algorithm called Byte-pair encoding algorithm, for example as discussed in [^{% cite radford2019language %}. 
+However I soon realized that tokenization is an important topic and can influence the model in many ways. Curious what SOTA LLMs use, I found that it is more common to use an algorithm called Byte-pair encoding algorithm, for example as discussed in [^<d-cite key="radford2019language"></d-cite>. 
 
 
 ### Byte-pair encoding algorithm
@@ -871,12 +871,12 @@ but it could also be tokenized as `['I', ' ', 'h', 'a', 'v', 'e', ' ', 's', 'o',
 
 The "vocabulary" is then the set of possible tokens. One problem is that not every word encountered might be represented in the vocabulary. Traditionally, rare words or given the token "UNKOWN" so as to limit the vocabulary, and to handle tokens not seen in the training set. However this is not great; we'd like the model to be able to handle anything without defaulting to an UNKNOWN token.
 
-Splitting on words is not great as that introduces a bias. In deep learning we like the model to learn the raw signal without human intervention and splitting on words is somewhat of a human intervention. Splitting on characters is better, but introduces other problems as discussed in [^{% cite radford2019language %}. 
+Splitting on words is not great as that introduces a bias. In deep learning we like the model to learn the raw signal without human intervention and splitting on words is somewhat of a human intervention. Splitting on characters is better, but introduces other problems as discussed in [^<d-cite key="radford2019language"></d-cite>. 
 
 One idea is to feed the model UTF-8 bytes directly. However, for each character, 1-4 bytes are used in UTF-8. We would have a vocabulary of size 256 ($2^8$ possible tokens can be modeled with a single byte). In this case the input size would explode in some cases since for each character we are using 1-4 tokens. For english tokens just a single byte is used but for characters in other languages and special tokens such as math, up to 4 bytes are used. This is a problem computationally, and so we would like the inputs to be somewhere on the spectrum of "word-level tokenization", "character-level tokenization", and "UTF-8 byte level representation".
 
 
-[^{% cite radford2019language %} (GPT-2 paper) adopted the BPE (byte-pair encoding) algorithm, which allows for a middle ground between these representations, and solves the issue of being able to model any possible character.
+[^<d-cite key="radford2019language"></d-cite> (GPT-2 paper) adopted the BPE (byte-pair encoding) algorithm, which allows for a middle ground between these representations, and solves the issue of being able to model any possible character.
 
 The BPE algorithm in short converts a "training set", which is possibly a sample of text used to train for the problem we're working on, or a completely different set of text, to UTF-8 bytes. As mentioned, this is a vocabulary of size 256. We want to expand the vocabulary. 
 
@@ -1062,7 +1062,7 @@ However, it turns out that this can produce suboptimal, awkwardly phrased, or st
 
 ### beam search
 
-A solution to this is to use "beam search". {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %} both use beam search to produce the output sequences. At first I skipped over this detail as I thought it might have been a relic of the past, but it turns out to be an important detail.
+A solution to this is to use "beam search". <d-cite key="10.5555/2969033.2969173"></d-cite> and <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite> both use beam search to produce the output sequences. At first I skipped over this detail as I thought it might have been a relic of the past, but it turns out to be an important detail.
 
 At each timestep $t$, beam search will choose the $B$ most likely next tokens, as well as store the following things:
 
@@ -1203,14 +1203,10 @@ However, this shows that we can output something rather than `<UNK>`.
 
 # Conclusion
 
-We implemented an RNN model without attention similar to {% cite 10.5555/2969033.2969173 %} and a model with attention similar to {% cite DBLP:journals/corr/BahdanauCB14 %} and found that the model with attention has better overall performance than the model without attention as evaluated by the BLEU score. However, {% cite DBLP:journals/corr/BahdanauCB14 %} reports a steep decrease in BLEU score as the sentence length increases, which we were not able to reproduce. Our results are in line with {% cite 10.5555/2969033.2969173 %} which reported that the model without attention is robust to sentence length, but the paper that introduced attention is the very famous paper while the model without attention that reported robustness to sentence length is not nearly as cited. 
+We implemented an RNN model without attention similar to <d-cite key="10.5555/2969033.2969173"></d-cite> and a model with attention similar to <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite> and found that the model with attention has better overall performance than the model without attention as evaluated by the BLEU score. However, <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite> reports a steep decrease in BLEU score as the sentence length increases, which we were not able to reproduce. Our results are in line with <d-cite key="10.5555/2969033.2969173"></d-cite> which reported that the model without attention is robust to sentence length, but the paper that introduced attention is the very famous paper while the model without attention that reported robustness to sentence length is not nearly as cited. 
 
 Attention forms the backbone of SOTA "language models" such as the GPT series, and as such became much more influential.
 
 Also of note that at the time, non-deep-learning based methods such as Moses, showed better performance on the translation task, but clearly the community invested more effort in deep learning based methods. The transformer model paid off and is significantly more influential than just in doing translation, which Moses is only capable of doing.
 
 Next, we'll build on language models and implement a transformer model rather than an RNN model.
-
-# References
-
-{% bibliography %}
