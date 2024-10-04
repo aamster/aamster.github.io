@@ -4,7 +4,7 @@ title: Sequence to sequence translation (part 1)
 tags: ["deep learning", "rnn", "machine translation", "sequences"]
 bibliography: 2024-10-03-sequence_to_sequence_translation.bib
 toc:
-  sidebar: left
+    sidebar: left
 ---
 
 In this article, I'll introduce language modeling using deep learning and will focus on the problem of translation.
