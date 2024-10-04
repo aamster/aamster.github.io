@@ -6,6 +6,7 @@ scholar:
     bibliography: 2024-10-03-sequence_to_sequence_translation.bib
 toc:
     sidebar: left
+related_publications: true
 ---
 
 In this article, I'll introduce language modeling using deep learning and will focus on the problem of translation.
