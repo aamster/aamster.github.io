@@ -1,5 +1,5 @@
 ---
-layout: distill
+layout: post
 title: Sequence to sequence translation (part 1)
 tags: ["deep learning", "rnn", "machine translation", "sequences"]
 bibliography: 2024-10-03-sequence_to_sequence_translation.bib
