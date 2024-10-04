@@ -139,7 +139,7 @@ So a large vocabulary increases memory requirements by the model due to the incr
 as well as the increase in number of neurons for predicting the output token, which is usually a linear transformation.
 
 According to the website [open source Shakespeare](https://www.opensourceshakespeare.org/statistics/) there are 28,829 unique words in all of Shakespeare's works, and apparently 40% of those words are used only once.
-That is a lot of words, but relatively modern LLMs (e.g. GPT2) use a token size of ~50,000 <d-cite key="radford2019language"></d-cite>, since these models need to understand more than just the vocabulary of Shakespeare. 
+That is a lot of words, but relatively modern LLMs (e.g. GPT2) use a token size of ~50,000 <d-cite key="Radford_Wu_Child_Luan_Amodei_Sutskever_2019"></d-cite>, since these models need to understand more than just the vocabulary of Shakespeare. 
 
 Large vocabulary sizes also mean that we need a very large dataset in order to capture enough examples for every token 
 in the vocabulary in order to train each token sufficiently. For example rarer tokens might be undertrained.
@@ -852,7 +852,7 @@ We can see from the figure below that beam search in general improves performanc
 In <d-cite key="DBLP:journals/corr/BahdanauCB14"></d-cite>, tokenization was treated as an after-thought. They say 
 > After a usual tokenization, ...
 
-However I soon realized that tokenization is an important topic and can influence the model in many ways. Curious what SOTA LLMs use, I found that it is more common to use an algorithm called Byte-pair encoding algorithm, for example as discussed in <d-cite key="radford2019language"></d-cite>. 
+However I soon realized that tokenization is an important topic and can influence the model in many ways. Curious what SOTA LLMs use, I found that it is more common to use an algorithm called Byte-pair encoding algorithm, for example as discussed in <d-cite key="Radford_Wu_Child_Luan_Amodei_Sutskever_2019"></d-cite>. 
 
 
 ### Byte-pair encoding algorithm
@@ -870,12 +870,12 @@ but it could also be tokenized as `['I', ' ', 'h', 'a', 'v', 'e', ' ', 's', 'o',
 
 The "vocabulary" is then the set of possible tokens. One problem is that not every word encountered might be represented in the vocabulary. Traditionally, rare words or given the token "UNKOWN" so as to limit the vocabulary, and to handle tokens not seen in the training set. However this is not great; we'd like the model to be able to handle anything without defaulting to an UNKNOWN token.
 
-Splitting on words is not great as that introduces a bias. In deep learning we like the model to learn the raw signal without human intervention and splitting on words is somewhat of a human intervention. Splitting on characters is better, but introduces other problems as discussed in <d-cite key="radford2019language"></d-cite>. 
+Splitting on words is not great as that introduces a bias. In deep learning we like the model to learn the raw signal without human intervention and splitting on words is somewhat of a human intervention. Splitting on characters is better, but introduces other problems as discussed in <d-cite key="Radford_Wu_Child_Luan_Amodei_Sutskever_2019"></d-cite>. 
 
 One idea is to feed the model UTF-8 bytes directly. However, for each character, 1-4 bytes are used in UTF-8. We would have a vocabulary of size 256 ($2^8$ possible tokens can be modeled with a single byte). In this case the input size would explode in some cases since for each character we are using 1-4 tokens. For english tokens just a single byte is used but for characters in other languages and special tokens such as math, up to 4 bytes are used. This is a problem computationally, and so we would like the inputs to be somewhere on the spectrum of "word-level tokenization", "character-level tokenization", and "UTF-8 byte level representation".
 
 
-<d-cite key="radford2019language"></d-cite> (GPT-2 paper) adopted the BPE (byte-pair encoding) algorithm, which allows for a middle ground between these representations, and solves the issue of being able to model any possible character.
+<d-cite key="Radford_Wu_Child_Luan_Amodei_Sutskever_2019"></d-cite> (GPT-2 paper) adopted the BPE (byte-pair encoding) algorithm, which allows for a middle ground between these representations, and solves the issue of being able to model any possible character.
 
 The BPE algorithm in short converts a "training set", which is possibly a sample of text used to train for the problem we're working on, or a completely different set of text, to UTF-8 bytes. As mentioned, this is a vocabulary of size 256. We want to expand the vocabulary. 
 
