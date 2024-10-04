@@ -6,7 +6,6 @@ tags:
     - rnn 
     - machine translation
     - sequences
-bibliography: 2024-10-03-sequence_to_sequence_translation.bib
 toc:
   sidebar: left
 ---
