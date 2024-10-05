@@ -208,16 +208,16 @@ class VanillaRNN:
 
 ```
 
-In words, we initialize a "hidden state" or $h_t$ of the RNN to the current state. We loop over every token in the input. For each token we calculate a function called $f$ which takes as input the current token $x_t$ as well as the current state $h_t$. We append the current hidden state for timestep $t$ to the list of outputs `outs`.
+In words, we initialize a "hidden state" or $$h_t$$ of the RNN to the current state. We loop over every token in the input. For each token we calculate a function called $$f$$ which takes as input the current token $$x_t$$ as well as the current state $$h_t$$. We append the current hidden state for timestep $$t$$ to the list of outputs `outs`.
 
 
-In math, $f$ takes a specific form.
+In math, $$f$$ takes a specific form.
 
 $$
 h_t = f(h_t, x_t; W) = tanh(W_{hh}h_t + W_{xh}x_t + b_h)
 $$
 
-The **hidden state**, $h_t$ is what stores the compressed/meaningful representation of the sequence. Let's look at how the hidden state is calculated.
+The **hidden state**, $$h_t$$ is what stores the compressed/meaningful representation of the sequence. Let's look at how the hidden state is calculated.
 
 There are 2 weight matrices involved:
 
@@ -228,13 +228,13 @@ $$
 W_{xh}\in \mathbb{R}^{x \times h}
 $$
 
-as you can see $W_{hh}$ is multiplied with $h_t$, $W_{xh}$ is multiplied with $x_t$ and the 2 resulting vectors are added along with a bias.
+as you can see $$W_{hh}$$ is multiplied with $$h_t$$, $$W_{xh}$$ is multiplied with $$x_t$$ and the 2 resulting vectors are added along with a bias.
 
-The resulting vector is then passed through the a function $tanh$ which is just a function that maps $(-\infty, +\infty) \to (-1, 1)$. It looks like this:
+The resulting vector is then passed through the a function $$tanh$$ which is just a function that maps $$(-\infty, +\infty) \to (-1, 1)$$. It looks like this:
 
  ![tanh](/assets/img/2024-06-22-sequence_to_sequence_translation/Hyperbolic_Tangent.svg)
 
-that means that the hidden state is a vector $h_t \in \mathbb{R}^h$ where each element is between $(-1, 1$)
+that means that the hidden state is a vector $$h_t \in \mathbb{R}^h$$ where each element is between $$(-1, 1$$)
 
 #### example
 
@@ -242,9 +242,9 @@ Let's look at a simple example using the sentence "I have socks." as input.
 
 Let's tokenize the sentence as ["I", "have", "socks", "."]
 
-Let the embedding vector be $x \in \mathbb{R}^2$
+Let the embedding vector be $$x \in \mathbb{R}^2$$
 
-Let the hidden state $h \in \mathbb{R}^3$.
+Let the hidden state $$h \in \mathbb{R}^3$$.
 
 
 ```python
@@ -317,7 +317,7 @@ then we iterated over each token, and updated the hidden state for each token.
 
 In detail:
 
-1. extract embedding vector for token "I", update hidden state $h_1$
+1. extract embedding vector for token "I", update hidden state $$h_1$$
 $$
 x_1 = \begin{bmatrix}-0.8330 & -0.4121\end{bmatrix}
 $$
@@ -328,7 +328,7 @@ $$
 h_1 = \begin{bmatrix}-0.3126 &  0.5246 &  0.6447\end{bmatrix}
 $$
 
-2. extract embedding vector for token "have", update hidden state $h_2$
+2. extract embedding vector for token "have", update hidden state $$h_2$$
 $$
 x_2 = \begin{bmatrix}-1.1774 &  0.7259\end{bmatrix}
 $$
@@ -339,7 +339,7 @@ $$
 h_2 = \begin{bmatrix}0.0277 &  0.3934 &  0.8409\end{bmatrix}
 $$
 
-3. extract embedding vector for token "socks", update hidden state $h_3$
+3. extract embedding vector for token "socks", update hidden state $$h_3$$
 $$
 x_3 = \begin{bmatrix}0.5375 & 0.0382\end{bmatrix}
 $$
@@ -350,7 +350,7 @@ $$
 h_3 = \begin{bmatrix}-0.8055 & -0.0275 &  0.0972\end{bmatrix}
 $$
 
-4. extract embedding vector for token ".", update hidden state $h_4$
+4. extract embedding vector for token ".", update hidden state $$h_4$$
 $$
 x_4 = \begin{bmatrix}-0.6446 & -1.0341\end{bmatrix}
 $$
@@ -361,7 +361,7 @@ $$
 h_4 = \begin{bmatrix}-0.2049 &  0.3322 &  0.3161\end{bmatrix}
 $$
 
-After all this math, we get a final hidden state $h_4$ and an output $o$ which includes $h_t$ for each timestep $t$
+After all this math, we get a final hidden state $$h_4$$ and an output $$o$$ which includes $$h_t$$ for each timestep $$t$$
 
 $$
 h_4 = \begin{bmatrix}-0.2049 & 0.3322 &  0.3161\end{bmatrix}
@@ -371,23 +371,23 @@ $$
 o = \begin{bmatrix}-0.3126 &  0.5246 &  0.6447\\0.0277 &  0.3934 &  0.8409\\-0.8055 & -0.0275 &  0.0972\\-0.2049 &  0.3322 &  0.3161\end{bmatrix}
 $$
 
-What do these numbers represent? The final hidden state $h_4$ represents the RNN's compressed/useful representation of the sequence. The outputs $o_t$ represent the compressed/useful representation after processing token $t$ and having processed the previous $t-1$ tokens.
+What do these numbers represent? The final hidden state $$h_4$$ represents the RNN's compressed/useful representation of the sequence. The outputs $$o_t$$ represent the compressed/useful representation after processing token $$t$$ and having processed the previous $$t-1$$ tokens.
 
-The hidden state is reset to $0$ each time it processes a new sequence.
+The hidden state is reset to $$0$$ each time it processes a new sequence.
 
 #### Why "recurrent" neural network
 
 Why are RNNs called "recurrent" neural networks?
 
-The name "recurrent" in "recurrent neural network" comes from the fact that the hidden state $h_{t-1}$ is recursively used to calculate the new hidden state $h_t$
+The name "recurrent" in "recurrent neural network" comes from the fact that the hidden state $$h_{t-1}$$ is recursively used to calculate the new hidden state $$h_t$$
 
-If we unpack a single update of $\textcolor{white}{h_t}$, we get:
+If we unpack a single update of $$\textcolor{white}{h_t}$$, we get:
 
 $$
 \textcolor{white}{h_t = tanh(W_{hh}\textcolor{lime}{h_{t-1}} + W_{xh}x_t + b_{hh} + b_{xh})}
 $$
 
-if we unpack $\textcolor{lime}{h_{t-1}}$ we get:
+if we unpack $$\textcolor{lime}{h_{t-1}}$$ we get:
 
 $$
 \textcolor{lime}{h_{t-1} = tanh(W_{hh}\textcolor{orange}{h_{t-2}} + W_{xh}x_{t-1} + b_{hh} + b_{xh})}
@@ -399,12 +399,12 @@ $$
 \textcolor{white}{h_t = tanh(W_{hh}(}\textcolor{lime}{tanh(W_{hh}\textcolor{orange}{h_{t-2}} + W_{xh}x_{t-1} + b_{hh} + b_{xh})}\textcolor{white}{) + W_{xh}x_t + b_{hh} + b_{xh})}
 $$
 
-If we unpack this for one more timestep, $\textcolor{orange}{h_{t-2}}$ would be 
+If we unpack this for one more timestep, $$\textcolor{orange}{h_{t-2}}$$ would be 
 $$
 \textcolor{orange}{h_{t-2} = tanh(W_{hh}h_{t-3} + W_{xh}x_{t-2} + b_{hh} + b_{xh})}
 $$
 
-Plugging in $\textcolor{orange}{h_{t-2}}$ we get:
+Plugging in $$\textcolor{orange}{h_{t-2}}$$ we get:
 
 $$
 \textcolor{white}{h_t = tanh(W_{hh}(}\textcolor{lime}{tanh(W_{hh}(}\textcolor{orange}{tanh(W_{hh}h_{t-3} + W_{xh}x_{t-2} + b_{hh} + b_{xh})}\textcolor{lime}{) + W_{xh}x_{t-1} + b_{hh} + b_{xh})}\textcolor{white}{) + W_{xh}x_t + b_{hh} + b_{xh})}
@@ -417,14 +417,14 @@ h_t = tanh(W_{hh}(tanh(W_{hh}(...tanh(W_{hh}h_0 + W_{xh}x_1 + b_{hh} + b_{xh})..
 $$
 
 
-- The calculation of the hidden state $\textcolor{white}{h_t}$ involves the previous $t-1$ hidden states $\textcolor{lime}{h_{t-1}}, \textcolor{orange}{h_{t-2}}, ... h_{0}$
-- The hidden state calculation $\textcolor{white}{h_t}$ involves each of the previous $t-1$ tokens in the sequence $\textcolor{lime}{x_{t-1}}, \textcolor{orange}{x_{t-2}}, ... x_{0}$. This enables the model to "see" the entire sequence.
-- The weights and biases $W_{hh}$, $W_{xh}$, $b_{hh}$, $b_{xh}$ are used repeatedly when processing the sequence for each hidden state $h_t$
-- There are a lot of matrix-matrix multiplications ($\textcolor{white}{W_{hh}} * \textcolor{lime}{W_{hh}} * \textcolor{orange}{W_{hh}}$). This can lead to very large numbers (exploding gradients) or very small numbers (vanishing gradients)
+- The calculation of the hidden state $$\textcolor{white}{h_t}$$ involves the previous $$t-1$$ hidden states $$\textcolor{lime}{h_{t-1}}, \textcolor{orange}{h_{t-2}}, ... h_{0}$$
+- The hidden state calculation $$\textcolor{white}{h_t}$$ involves each of the previous $$t-1$$ tokens in the sequence $$\textcolor{lime}{x_{t-1}}, \textcolor{orange}{x_{t-2}}, ... x_{0}$$. This enables the model to "see" the entire sequence.
+- The weights and biases $$W_{hh}$$, $$W_{xh}$$, $$b_{hh}$$, $$b_{xh}$$ are used repeatedly when processing the sequence for each hidden state $$h_t$$
+- There are a lot of matrix-matrix multiplications ($$\textcolor{white}{W_{hh}} * \textcolor{lime}{W_{hh}} * \textcolor{orange}{W_{hh}}$$). This can lead to very large numbers (exploding gradients) or very small numbers (vanishing gradients)
 
 
 {: .box-note}
-**Note:** This is showing the forward pass of a simple RNN using a single training example. The model would actually be trained on many examples, and the model parameters $W_{hh}$, $W_{xh}$, $b_{hh}$, $b_{xh}$ would be trained using backpropagation.
+**Note:** This is showing the forward pass of a simple RNN using a single training example. The model would actually be trained on many examples, and the model parameters $$W_{hh}$$, $$W_{xh}$$, $$b_{hh}$$, $$b_{xh}$$ would be trained using backpropagation.
 
 #### More complicated architectures
 There are various issues with this simple "vanilla RNN" architecture that people have worked on addressing over the years, and there are other improvements to increase complexity and expressiveness.
@@ -458,18 +458,18 @@ Here is a picture of what that would look like for the sequence "I have socks." 
  You'll notice a few things from this picture of the encoder-decoder architecture for translation.
 
  - The encoder and decoder look similar. They are both separate RNNs that are connected to each other and trained together. Each have separate hidden states.
- - The inputs to each timestep $t$ in the decoder are the <span style="color:rgb(245,66,213)">context vector</span> as well as the <span style="color:rgb(0,103,20)">previous token</span>.
- - The <span style="color:rgb(245,66,213)">context vector</span> is the last hidden state $h_t$ in the encoder (the encoder's representation after processing the entire input sequence). The same <span style="color:rgb(245,66,213)">context vector</span> is used for each timestep $t$ in the decoder
- - At each step in the decoder we predict the correct token $\hat{y_{t}}$ and compare it with the <span style="color:rgb(0,103,20)">correct token</span> at that timestep
+ - The inputs to each timestep $$t$$ in the decoder are the <span style="color:rgb(245,66,213)">context vector</span> as well as the <span style="color:rgb(0,103,20)">previous token</span>.
+ - The <span style="color:rgb(245,66,213)">context vector</span> is the last hidden state $$h_t$$ in the encoder (the encoder's representation after processing the entire input sequence). The same <span style="color:rgb(245,66,213)">context vector</span> is used for each timestep $$t$$ in the decoder
+ - At each step in the decoder we predict the correct token $$\hat{y_{t}}$$ and compare it with the <span style="color:rgb(0,103,20)">correct token</span> at that timestep
 
  {: .box-note}
-**Note:** $\hat{y_{t}}$ is calculated using the [softmax](https://en.wikipedia.org/wiki/Softmax_function) function over every possible token in the target vocabulary. For example, if there are 10,000 possible tokens in the target language vocabulary, then $\hat{y_{t}}$ will be of size 10,000. We then calculate $argmax$ over this vector to choose the most confident token at that timestep.
+**Note:** $$\hat{y_{t}}$$ is calculated using the [softmax](https://en.wikipedia.org/wiki/Softmax_function) function over every possible token in the target vocabulary. For example, if there are 10,000 possible tokens in the target language vocabulary, then $$\hat{y_{t}}$$ will be of size 10,000. We then calculate $$argmax$$ over this vector to choose the most confident token at that timestep.
 
  {: .box-note}
 **Note:** both the encoder and decoder networks are trained end-to-end using backpropagation using the [cross-entropy](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html) loss function
 
  {: .box-note}
-**Note:** At inference time we use the previously predicted token $\hat{y}_{t-1}$ rather than the truly <span style="color:rgb(0,103,20)">correct token</span> at each timestep $t$
+**Note:** At inference time we use the previously predicted token $$\hat{y}_{t-1}$$ rather than the truly <span style="color:rgb(0,103,20)">correct token</span> at each timestep $$t$$
 
 ### attention
 
@@ -513,9 +513,9 @@ While {% cite DBLP:journals/corr/BahdanauCB14 %} was the paper to popularize the
 
 #### Bahdanau (additive) attention
 
-Let $s_{i-1}$ be the previous hidden state in the decoder
+Let $$s_{i-1}$$ be the previous hidden state in the decoder
 
-Let $h_j$ be the hidden state in the last layer of the encoder RNN at each timestep $j$
+Let $$h_j$$ be the hidden state in the last layer of the encoder RNN at each timestep $$j$$
 
 Bahdanau attention adds 3 new parameters:
 
@@ -529,9 +529,9 @@ $$
 v_a \in \mathbb{R}^{n}
 $$
 
-where $n$ is the hidden state dimensionality in both the encoder and decoder (must be the same) and $U_a$ is n x *2n* because the encoder was bidirectional in the paper.
+where $$n$$ is the hidden state dimensionality in both the encoder and decoder (must be the same) and $$U_a$$ is n x *2n* because the encoder was bidirectional in the paper.
 
-Then the attention weights $a$ can be calculated by taking as input the decoder previous hidden state $s_{i-1}$ and the hidden state in the last layer of the encoder RNN at each timestep $j$ as:
+Then the attention weights $$a$$ can be calculated by taking as input the decoder previous hidden state $$s_{i-1}$$ and the hidden state in the last layer of the encoder RNN at each timestep $$j$$ as:
 
 $$
 a(s_{i-1}, h_j) = {v_a}^Ttanh(W_as_{i-1} + U_ah_j)
@@ -539,15 +539,15 @@ $$
 
 ##### How does this give the model the ability to pay attention to certain parts of the input?
 
-We are taking the current decoder hidden state $s_{i-1}$ when processing token at timestep $i$ and adding it to the hidden state in the encoder at each timestep $j$ $h_j$. That is why this form of attention is referred to as "additive" attention.
+We are taking the current decoder hidden state $$s_{i-1}$$ when processing token at timestep $$i$$ and adding it to the hidden state in the encoder at each timestep $$j$$ $$h_j$$. That is why this form of attention is referred to as "additive" attention.
 
-The result of $a(s_{i-1}, h_j)$ will be $\in \mathbb{R}^{t}$ where $t$ is the number of tokens in the input sequence.
+The result of $$a(s_{i-1}, h_j)$$ will be $$\in \mathbb{R}^{t}$$ where $$t$$ is the number of tokens in the input sequence.
 
 It will look like:
 
  ![attention weights](/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights.png)
 
-We then map the numbers to a probability distribution using the $softmax$ function. The attention weights will then look like:
+We then map the numbers to a probability distribution using the $$softmax$$ function. The attention weights will then look like:
 
  ![attention weights](/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights_softmax.png)
 
@@ -569,23 +569,23 @@ $$
 
 This is similar to the previously discussed additive attention but with a few key differences. 
 
-The query $Q$ is the current vector we are asking the question "what should we be paying attention to?". The keys $K$ are the set of vectors, or matrix, which are the options to pay attention to. The values $V$ is the set of vectors, or matrix, that each key maps to.
+The query $$Q$$ is the current vector we are asking the question "what should we be paying attention to?". The keys $$K$$ are the set of vectors, or matrix, which are the options to pay attention to. The values $$V$$ is the set of vectors, or matrix, that each key maps to.
 
-In the case of translation using the RNN encoder-decoder model, the query $Q$ is the current decoder hidden state of dimension $d_q$. The keys are the encoder outputs which get mapped to the dimension $d_{t \times {d_q}}$ and the values are also the encoder outputs mapped to the dimension $d_{t \times {d_v}}$
+In the case of translation using the RNN encoder-decoder model, the query $$Q$$ is the current decoder hidden state of dimension $$d_q$$. The keys are the encoder outputs which get mapped to the dimension $$d_{t \times {d_q}}$$ and the values are also the encoder outputs mapped to the dimension $$d_{t \times {d_v}}$$
 
 
-The idea is that we want to find which _keys_ $K$ in the input the current _query_ $Q$ should attend to. This is computed as the dot product between $Q$ and $K$. The dot product has the theoretical interpretation as the similarity between 2 vectors. 
+The idea is that we want to find which _keys_ $$K$$ in the input the current _query_ $$Q$$ should attend to. This is computed as the dot product between $$Q$$ and $$K$$. The dot product has the theoretical interpretation as the similarity between 2 vectors. 
 
-We are multiplying the query $Q$ of dimension $q$ with $K^T$ of dimension ${q \times t}$. The resulting vector is of dimension $t$. 
+We are multiplying the query $$Q$$ of dimension $$q$$ with $$K^T$$ of dimension $${q \times t}$$. The resulting vector is of dimension $$t$$. 
 
-This is then divided by $\sqrt{d_k}$, and hence the name "scaled" in "scaled dot-product" since we are scaling the dot-product by $\sqrt{d_k}$. The reason for this is given as 
+This is then divided by $$\sqrt{d_k}$$, and hence the name "scaled" in "scaled dot-product" since we are scaling the dot-product by $$\sqrt{d_k}$$. The reason for this is given as 
 
-> We suspect that for large values of $d_k$, the dot products grow large in magnitude, pushing the softmax function into regions where it has
-extremely small gradients. To counteract this effect, we scale the dot products by $\sqrt{d_k}$.
+> We suspect that for large values of $$d_k$$, the dot products grow large in magnitude, pushing the softmax function into regions where it has
+extremely small gradients. To counteract this effect, we scale the dot products by $$\sqrt{d_k}$$.
 
-We then take the $softmax$, resulting in a probability for each timestep $t$. 
+We then take the $$softmax$$, resulting in a probability for each timestep $$t$$. 
 
-Finally, we multiply this by the matrix $V$. The resulting vector is of size $d_v$ and each element is a weighted sum of importances calculated from the attention weights in the previous step.
+Finally, we multiply this by the matrix $$V$$. The resulting vector is of size $$d_v$$ and each element is a weighted sum of importances calculated from the attention weights in the previous step.
 
 ### Measuring performance of translation tasks: BLEU score
 
@@ -619,7 +619,7 @@ See this interesting figure in the paper in which the authors found the bleu sco
 
  ![bleu human correlation](/assets/img/2024-06-22-sequence_to_sequence_translation/bleu_human_correlation.png)
 
-At a high level, the bleu score computes an average of precisions for $n$-grams up to a certain $n$.
+At a high level, the bleu score computes an average of precisions for $$n$$-grams up to a certain $$n$$.
 
 Let's take a look at an example
 
@@ -643,38 +643,38 @@ print(results)
 {'bleu': 0.4723665527410147, 'precisions': [1.0, 1.0, 1.0, 1.0], 'brevity_penalty': 0.4723665527410147, 'length_ratio': 0.5714285714285714, 'translation_length': 4, 'reference_length': 7}
 ```
 
-The bleu score for the prediction `I have socks.` when the reference translation is `In my dresser I have socks.` is $0.47$. The bleu score ranges between $[0, 1]$ and so a bleu score of $0.47$ is decent but not perfect.
+The bleu score for the prediction `I have socks.` when the reference translation is `In my dresser I have socks.` is $$0.47$$. The bleu score ranges between $$[0, 1]$$ and so a bleu score of $$0.47$$ is decent but not perfect.
 
 Let's break down the calculation further:
 
-$1$-grams
+$$1$$-grams
 
 - Prediction unigrams: {I, have, socks, .}
 - Reference unigrams: {In, my, dresser, I, have, socks, .}
 - Total unigrams in prediction: 4
-- Unigram precision: $p_1$ = $\frac{4}{4} = 1.0$
+- Unigram precision: $$p_1$$ = $$\frac{4}{4} = 1.0$$
 
-$2$-grams
+$$2$$-grams
 - Prediction bigrams: {I have, have socks, socks .}
 - Reference bigrams: {In my, my dresser, dresser I, I have, have socks, socks .}
 - Total bigrams in prediction: 3
-- Bigram precision: $p_2$ = $\frac{3}{3} = 1.0$
+- Bigram precision: $$p_2$$ = $$\frac{3}{3} = 1.0$$
 
-$3$-grams
+$$3$$-grams
 - Prediction trigrams: {I have socks, have socks .}
 - Reference trigrams: {In my dresser, my dresser I, dresser I have, I have socks, have socks .}
 - Total trigrams in prediction: 2
-- Trigram precision: $p_3$ = $\frac{2}{2} = 1.0$
+- Trigram precision: $$p_3$$ = $$\frac{2}{2} = 1.0$$
 
-$4$-grams
+$$4$$-grams
 - Prediction 4-grams: {I have socks .}
 - Reference 4-grams: {In my dresser I, my dresser I have, dresser I have socks, I have socks .}
 - Total 4-grams in prediction: 1
-- 4-gram precision: $p_4$ = $\frac{1}{1} = 1.0$
+- 4-gram precision: $$p_4$$ = $$\frac{1}{1} = 1.0$$
 
-So in this case all the $n$-gram precisions up to $4$ are $1.0$. But the translation is not perfect, so how do we penalize it?
+So in this case all the $$n$$-gram precisions up to $$4$$ are $$1.0$$. But the translation is not perfect, so how do we penalize it?
 
-A brevity penalty is calculated. The way it is calculated is outside of the scope of this article. See the {% cite 10.3115/1073083.1073135 %} for the equation. In this case the brevity penalty is $0.47$. The brevity penalty is multiplied with the $n$-gram precisions to get a final bleu score of $0.47$.
+A brevity penalty is calculated. The way it is calculated is outside of the scope of this article. See the {% cite 10.3115/1073083.1073135 %} for the equation. In this case the brevity penalty is $$0.47$$. The brevity penalty is multiplied with the $$n$$-gram precisions to get a final bleu score of $$0.47$$.
 
 #### Bleu score problems
 
@@ -686,7 +686,7 @@ It does not take into consideration semantics. Let's say the reference translati
 
 It was designed for English translations. Translations in other languages may not have the same "similar n-gram matches correlates with human-judgement of translation quality" property.
 
-If one of the n-gram matches is 0, the bleu score is undefined since $log(0)$ is undefined. It is usually set to 0 in this case. For example, the translation `I have socks.` with reference `I have socks in my dresser.` would have a bleu score of 0 since the $4$-gram has precision of 0. This is not a good property since it is clearly a close translation. This can be fixed by adding 1 to all n-gram precisions, but it's not clear whether papers use this approach. 
+If one of the n-gram matches is 0, the bleu score is undefined since $$log(0)$$ is undefined. It is usually set to 0 in this case. For example, the translation `I have socks.` with reference `I have socks in my dresser.` would have a bleu score of 0 since the $$4$$-gram has precision of 0. This is not a good property since it is clearly a close translation. This can be fixed by adding 1 to all n-gram precisions, but it's not clear whether papers use this approach. 
 
 See [this page](https://huggingface.co/spaces/evaluate-metric/bleu) for more discussion of limitations.
 
@@ -741,15 +741,15 @@ English:
 
 ### Model
 
-I used an encoder-decoder model using a GRU in both the encoder and decoder. The encoder is bidirectional. The hidden state size in the forward and backward directions of the encoder is $1000$ and in the decoder is $1000$. The embedding dimensionality in both the encoder and decoder is $1000$. Both the encoder and decoder have $4$ layers. For attention, I used the scaled dot-product attention with $d_v$ equal to $1000$. The source vocab size and target vocab size were set to $30,000$. The models with attention and without attention contains ~$189M$ trainable params.
+I used an encoder-decoder model using a GRU in both the encoder and decoder. The encoder is bidirectional. The hidden state size in the forward and backward directions of the encoder is $$1000$$ and in the decoder is $$1000$$. The embedding dimensionality in both the encoder and decoder is $$1000$$. Both the encoder and decoder have $$4$$ layers. For attention, I used the scaled dot-product attention with $$d_v$$ equal to $$1000$$. The source vocab size and target vocab size were set to $$30,000$$. The models with attention and without attention contains ~$$189M$$ trainable params.
 
-For comparison, {% cite 10.5555/2969033.2969173 %} used bidirectional LSTM instead of GRU. The vocab sizes were much larger at $160,000$ for the source and $80,000$ for the target. Their model contain $384M$ params. To the best of my knowledge the attention model implemented is approximately equal to {% cite DBLP:journals/corr/BahdanauCB14 %}, but they leave out some implementation details, so I cannot say for sure.
+For comparison, {% cite 10.5555/2969033.2969173 %} used bidirectional LSTM instead of GRU. The vocab sizes were much larger at $$160,000$$ for the source and $$80,000$$ for the target. Their model contain $$384M$$ params. To the best of my knowledge the attention model implemented is approximately equal to {% cite DBLP:journals/corr/BahdanauCB14 %}, but they leave out some implementation details, so I cannot say for sure.
 
 ### Training details
 
 - I used 3 nvidia V100 GPUs to train both the model with attention and model without attention. 
 - Both models were trained for up to 3 epochs, or 72 hours, whichever came first. The model with attention completed ~3 epochs in 72 hours, while the model without attention completed 3 epochs. 
-- $AdamW$ optimizer using cosine annealing with warmup learning rate scheduler was used. Warmup number of steps is $2000$, min learning rate is $6e^{-5}$ and max learning rate is $6e^{-4}$
+- $$AdamW$$ optimizer using cosine annealing with warmup learning rate scheduler was used. Warmup number of steps is $$2000$$, min learning rate is $$6e^{-5}$$ and max learning rate is $$6e^{-4}$$
 - Cross entropy loss was used between the output sequence of tokens with highest probabilty and the target.
 
 ### Results
@@ -835,7 +835,7 @@ I'll compare greedy vs. beam search results
 | Sequence generation method | Average Bleu score |
 | :------ |:--- |
 |Greedy | 0.372|
-| Beam search with $beam width = 10$ | 0.387 |
+| Beam search with $$beam width = 10$$ | 0.387 |
 
 So beam search slightly improves overall performance, but at the cost of taking significantly longer to run.
 
@@ -870,7 +870,7 @@ The "vocabulary" is then the set of possible tokens. One problem is that not eve
 
 Splitting on words is not great as that introduces a bias. In deep learning we like the model to learn the raw signal without human intervention and splitting on words is somewhat of a human intervention. Splitting on characters is better, but introduces other problems as discussed in {% cite Radford_Wu_Child_Luan_Amodei_Sutskever_2019 %}. 
 
-One idea is to feed the model UTF-8 bytes directly. However, for each character, 1-4 bytes are used in UTF-8. We would have a vocabulary of size 256 ($2^8$ possible tokens can be modeled with a single byte). In this case the input size would explode in some cases since for each character we are using 1-4 tokens. For english tokens just a single byte is used but for characters in other languages and special tokens such as math, up to 4 bytes are used. This is a problem computationally, and so we would like the inputs to be somewhere on the spectrum of "word-level tokenization", "character-level tokenization", and "UTF-8 byte level representation".
+One idea is to feed the model UTF-8 bytes directly. However, for each character, 1-4 bytes are used in UTF-8. We would have a vocabulary of size 256 ($$2^8$$ possible tokens can be modeled with a single byte). In this case the input size would explode in some cases since for each character we are using 1-4 tokens. For english tokens just a single byte is used but for characters in other languages and special tokens such as math, up to 4 bytes are used. This is a problem computationally, and so we would like the inputs to be somewhere on the spectrum of "word-level tokenization", "character-level tokenization", and "UTF-8 byte level representation".
 
 
 {% cite Radford_Wu_Child_Luan_Amodei_Sutskever_2019 %} (GPT-2 paper) adopted the BPE (byte-pair encoding) algorithm, which allows for a middle ground between these representations, and solves the issue of being able to model any possible character.
@@ -975,14 +975,14 @@ $$
 attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V
 $$
 
-We want $V$ to be 0 where the padding tokens are. To do that we just need to set the scores $QK^T$ to $-{inf}$ where the padding tokens are. 
+We want $$V$$ to be 0 where the padding tokens are. To do that we just need to set the scores $$QK^T$$ to $$-{inf}$$ where the padding tokens are. 
 
 ```python
 scores = torch.bmm(query, keys.transpose(1, 2)) / math.sqrt(Dq)
 scores = scores.masked_fill(mask.unsqueeze(1), float('-inf'))
 ```
 
-where $mask$ is $1$ where the pad tokens are.
+where $$mask$$ is $$1$$ where the pad tokens are.
 
 ##### does it work?
 
@@ -1053,21 +1053,21 @@ When we're producing the output sequences it turns out that there are multiple w
 
 The simplest is called "greedy search" and involves just selecting the token with the highest predicted probability of being the correct token at each timestep.
 
-I thought this would be sufficient, as the model is being optimized to learn which is the correct token at each timestep $t$ given the previous $t-1$ tokens.
+I thought this would be sufficient, as the model is being optimized to learn which is the correct token at each timestep $$t$$ given the previous $$t-1$$ tokens.
 
-However, it turns out that this can produce suboptimal, awkwardly phrased, or strange outputs. It can select a bad token at timestep $t$ and then this creates a bad sequence going forward.
+However, it turns out that this can produce suboptimal, awkwardly phrased, or strange outputs. It can select a bad token at timestep $$t$$ and then this creates a bad sequence going forward.
 
 #### beam search
 
 A solution to this is to use "beam search". {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %} both use beam search to produce the output sequences. At first I skipped over this detail as I thought it might have been a relic of the past, but it turns out to be an important detail.
 
-At each timestep $t$, beam search will choose the $B$ most likely next tokens, as well as store the following things:
+At each timestep $$t$$, beam search will choose the $$B$$ most likely next tokens, as well as store the following things:
 
-- the decoder hidden state at timestep $t$
-- the generated sequence at timestep $t$
-- The $log-likelihood$ of the sequence
+- the decoder hidden state at timestep $$t$$
+- the generated sequence at timestep $$t$$
+- The $$log-likelihood$$ of the sequence
 
-We start by choosing $B$ most likely tokens to start the sequence. Then for each of these sequences, we select the $B$ most likely next tokens, producing $B^2$ possible sequences. From this list of possible sequences, we choose the $B$ most promising by comparing the $log-likelihood$ of each sequence and choosing the $B$ sequences with the lowest $log-likelihood$. We complete the search once all $B$ beams terminate with an `end of sentence` token or when we've done a certain number of iterations of search, whichever comes first.
+We start by choosing $$B$$ most likely tokens to start the sequence. Then for each of these sequences, we select the $$B$$ most likely next tokens, producing $$B^2$$ possible sequences. From this list of possible sequences, we choose the $$B$$ most promising by comparing the $$log-likelihood$$ of each sequence and choosing the $$B$$ sequences with the lowest $$log-likelihood$$. We complete the search once all $$B$$ beams terminate with an `end of sentence` token or when we've done a certain number of iterations of search, whichever comes first.
 
 ##### beam search example
 
@@ -1085,24 +1085,24 @@ The greedy search prediction is:
 
 Let's see what beam search produces.
 
-For this example I am using a $beam-size$ $B$ of $2$.
+For this example I am using a $$beam-size$$ $$B$$ of $$2$$.
 
 Beam search starts off predicting the 1st token:
 
 **iteration 1**
 
-| Sequence | $log-likelihood$ |
+| Sequence | $$log-likelihood$$ |
 | :------ |:--- |
 | | 0.0 |
 | ' | -19.966 |
 
 It starts off predicting start of sentence and an apostrophe token.
 
-Then, for each of these beams, it predicts $B$ next tokens:
+Then, for each of these beams, it predicts $$B$$ next tokens:
 
 **iteration 2**
 
-| Sequence | $log-likelihood$ |
+| Sequence | $$log-likelihood$$ |
 | :------ |:--- |
 |Le | -0.387|
 | La | -3.325 |
@@ -1112,7 +1112,7 @@ Then, for each of these beams, it predicts $B$ next tokens:
 For each of the previous 2 beams, we search for the next token. *Le* is the most likely, while *La* is second most likely. We select these 2 beams and continue expanding both.
 
 **iteration 3**
-| Sequence | $log-likelihood$ |
+| Sequence | $$log-likelihood$$ |
 | :------ |:--- |
 |Le directeur| -0.560|
 | Le chef | -4.279 |
@@ -1122,7 +1122,7 @@ For each of the previous 2 beams, we search for the next token. *Le* is the most
 Let's see what happens next.
 
 **iteration 4**
-| Sequence | $log-likelihood$ |
+| Sequence | $$log-likelihood$$ |
 | :------ |:--- |
 |Le directeur du| -1.102|
 | Le directeur de | -1.667 |
@@ -1130,7 +1130,7 @@ Let's see what happens next.
 | La directrice de| -5.007 |
 
 **iteration 5**
-| Sequence | $log-likelihood$ |
+| Sequence | $$log-likelihood$$ |
 | :------ |:--- |
 |Le directeur du théâtre| -1.267|
 | Le directeur du secteur| -5.419 |
@@ -1138,18 +1138,18 @@ Let's see what happens next.
 | Le directeur de la| -2.565 |
 
 We can see how beam search is trying out different possibilities for the next token and 
-adjustment the likelihood after expanding each of the most likely $B$ beams $B$ times.
+adjustment the likelihood after expanding each of the most likely $$B$$ beams $$B$$ times.
 
 It continues like this for 28 iterations. The final list of beam candidates are:
 
-| Sequence | $log-likelihood$ |
+| Sequence | $$log-likelihood$$ |
 | :------ |:--- |
 |Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie pour vérifier une odeur suspecte.| -12.367|
 | Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie pour vérifier une odeur suspecte de| -19.076 |
 | Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie à vérifier une odeur suspecte. | -12.813|
 | Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie à vérifier une odeur suspecte de | -12.813 |
 
-We can see that 2 of the sequences are incomplete, but because $B=2$ of the sequences are complete, beam search terminates. This is a  bias of beam search that it prefers shorter sequences.
+We can see that 2 of the sequences are incomplete, but because $$B=2$$ of the sequences are complete, beam search terminates. This is a  bias of beam search that it prefers shorter sequences.
 
 
 ### Handling unknown tokens
