@@ -17,9 +17,9 @@ I'll compare  {% cite DBLP:journals/corr/BahdanauCB14 %} which introduces the id
 
 In the next article I'll cover how language is modeled today using transformers. 
 
-# Introduction
+## Introduction
 
-## Avoiding NLP
+### Avoiding NLP
 
 In school, I always skipped over the natural language processing (NLP) topic for several reasons
 
@@ -35,21 +35,21 @@ The second reason why I avoided this topic is that I didn't see much practical v
 
 These reasons lead to me cringing everytime I saw "NLP" mentioned
 
-## Language modeling today
+### Language modeling today
 
 Turn to 2024 and language modeling is arguably the hottest topic in AI, so much so in fact that when some people say "AI" they are actually referring to language modeling. 
 
 The models used for language modeling are also general purpose models that can handle any problem in which the data can be broken up into a finite sequence of tokens such as image understanding/generation, audio, biology (genomics), etc, and so language is just one use case of these models.
 
-## What is a language model?
+### What is a language model?
 
 Simply put a language model is a model that has learned to predict the next token given the previous tokens. The token is usually a word/subword/single character.
 
-## What is a large language model?
+### What is a large language model?
 
 A large language model or LLM is a language model that has been trained on a ton of text and has many parameters (billions or trillions). Parameters are akin to the weights in biological neurons which determine whether they fire or not.
 
-## Why is language modeling now relevant and interesting?
+### Why is language modeling now relevant and interesting?
 
 Language models are part of a trend in AI of generative models. Generative models produce data, whereas historically machine learning models used to only predict a single variable, such as whether a review was good or the price of a house.
 
@@ -67,7 +67,7 @@ In research, many people are doing and have been doing amazing research. There i
 
 Much of life can be tedious or confusing; large language models can hopefully serve as the "all knowing" guide and enhance our creativity and insight without us needing to sacrifice our autonomy or intelligence.
 
-## Sequence to sequence translation
+### Sequence to sequence translation
 
 Translation has historically been a challenging task to automate and was used as a springboard for different AI research.
 
@@ -76,11 +76,11 @@ I chose translation as the task to focus on for learning language modeling as 2 
 The task of translation, as you may have guessed, involves translating an arbitrary document (word, sentence, paragraph, whatever) from 1 language into another. 
 
 
-## Why is translation using neural networks difficult
+### Why is translation using neural networks difficult
 
 Translation using neural network models is challenging for several reasons.
 
-### Language involves sequences of arbitrary length
+#### Language involves sequences of arbitrary length
     
 According to {% cite 10.5555/2969033.2969173 %}
 > Despite their flexibility and power, DNNs [Deep Neural Nets] can only be applied to problems whose inputs and targets
@@ -94,7 +94,7 @@ Traditional machine learning operates on fixed length vectors, such as variables
     
 Language is different in that sentences can be of arbitrary length. How to encode the sentences "I ate a cheese sandwhich" as well as "It is morning." such that the model receives a fixed length input?
  
-### Long inputs
+#### Long inputs
 
 The paragraph 
 > It was cold outside so I wanted something warm to drink. I was out of tea so I thought to go to the store to buy some. My favorite kind of tea is matcha tea because of its health benefits. It was on sale so I bought some matcha tea. Drinking the tea really warms me up and gives me energy!
@@ -128,7 +128,7 @@ Sutskever et al, 2014 say that the model performs well on long inputs, but Cho e
 
 The problem of sentence length would lead to the idea of attention in Bahdanau et al, 2014, which forms the basis for the transformer architecture.
 
-### Vocabularies are large
+#### Vocabularies are large
 
 In language models, we have to turn the text into a series of tokens. Typically, the tokens were words but in modern LLMs the tokens are constructed using the [byte pair encoding algorithm](https://en.wikipedia.org/wiki/Byte_pair_encoding) in which the tokens are not necessarily words but can be phrases, sub-words or single characters. I'll go into more detail about the BPE algorithm later in the article.
 
@@ -142,7 +142,7 @@ That is a lot of words, but relatively modern LLMs (e.g. GPT2) use a token size 
 Large vocabulary sizes also mean that we need a very large dataset in order to capture enough examples for every token 
 in the vocabulary in order to train each token sufficiently. For example rarer tokens might be undertrained.
 
-### Translation is difficult
+#### Translation is difficult
 
 The Hebrew sentence יש לי גרביים means "I have socks".
 
@@ -156,7 +156,7 @@ Another example would be translating the phrase "black cat" into spanish in whic
 
 This is just scratching the surface as to why translation is difficult.
 
-# Sequence to sequence models
+## Sequence to sequence models
 
 Translation involves taking in a sequence of text and producing a sequence of text. For example:
 
@@ -192,7 +192,7 @@ The encoder processes and compresses the input into a meaningful representation,
 
 In {% cite 10.5555/2969033.2969173 %} both the encoder and decoder are RNNs, (or more specifically a variant called LSTM). Let's take a look at how an RNN works.
 
-## RNNs
+### RNNs
 
 The basic form of an RNN is the following, in pseudo-code:
 
@@ -236,7 +236,7 @@ The resulting vector is then passed through the a function $tanh$ which is just 
 
 that means that the hidden state is a vector $h_t \in \mathbb{R}^h$ where each element is between $(-1, 1$)
 
-### example
+#### example
 
 Let's look at a simple example using the sentence "I have socks." as input.
 
@@ -375,7 +375,7 @@ What do these numbers represent? The final hidden state $h_4$ represents the RNN
 
 The hidden state is reset to $0$ each time it processes a new sequence.
 
-### Why "recurrent" neural network
+#### Why "recurrent" neural network
 
 Why are RNNs called "recurrent" neural networks?
 
@@ -426,7 +426,7 @@ $$
 {: .box-note}
 **Note:** This is showing the forward pass of a simple RNN using a single training example. The model would actually be trained on many examples, and the model parameters $W_{hh}$, $W_{xh}$, $b_{hh}$, $b_{xh}$ would be trained using backpropagation.
 
-### More complicated architectures
+#### More complicated architectures
 There are various issues with this simple "vanilla RNN" architecture that people have worked on addressing over the years, and there are other improvements to increase complexity and expressiveness.
 
 Mentioned above is the issue that because there are many matrix-matrix multiplications, the simple RNN has the issue of vanishing and exploding gradients which prevent the network from learning well. People have worked on addressing this issue by introducing [LSTM](https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html) and [GRU](https://pytorch.org/docs/stable/generated/torch.nn.GRU.html) and these variants are used in practice instead of the simple RNN. These fix the issue of vanishing gradients; exploding gradients are usually handled by thresholding the gradients if the norm is larger than a certain value.
@@ -437,7 +437,7 @@ To increase the model expressiveness, you can stack multiple RNNs together where
 It might also be useful to process a sequence in the forwards direction and in the backwards direction. To do this, you can use 2 RNNs: 1 that processes the sequence forwards and the other backwards. Set `bidirectional=True` in pytorch to do this.
 
 
-## Encoder-decoder architecture
+### Encoder-decoder architecture
 
 So far we've discussed how an RNN can be used to process the source sequence. What about translation? To do translation, we have to add an additional step.
 
@@ -471,7 +471,7 @@ Here is a picture of what that would look like for the sequence "I have socks." 
  {: .box-note}
 **Note:** At inference time we use the previously predicted token $\hat{y}_{t-1}$ rather than the truly <span style="color:rgb(0,103,20)">correct token</span> at each timestep $t$
 
-## attention
+### attention
 
 You might have noticed that the entire input sequence is compressed into what is called the __context vector__. The decoder must rely on all of the meaning of the input sequence being encoded into the context vector in order to produce the translation.
 
@@ -505,13 +505,13 @@ In the following plot, they compared an encoder-decoder model without attention,
 
  Compare this to RNNsearch-* which is a model with attention. Both RNNsearch models have better performance, and interestingly, the RNNsearch-50 model shows no sign of decrease in performance as the sentence length increases.
 
-### what is attention?
+#### what is attention?
 
 Attention, as the name implies is giving the model the ability to pay attention to certain parts of the input. 
 
 While {% cite DBLP:journals/corr/BahdanauCB14 %} was the paper to popularize the idea of attention, it was refined and simplified in {% cite 10.5555/3295222.3295349 %}, and the latter is what is typically used. I'll go over both versions of attention.
 
-### Bahdanau (additive) attention
+#### Bahdanau (additive) attention
 
 Let $s_{i-1}$ be the previous hidden state in the decoder
 
@@ -537,7 +537,7 @@ $$
 a(s_{i-1}, h_j) = {v_a}^Ttanh(W_as_{i-1} + U_ah_j)
 $$
 
-#### How does this give the model the ability to pay attention to certain parts of the input?
+##### How does this give the model the ability to pay attention to certain parts of the input?
 
 We are taking the current decoder hidden state $s_{i-1}$ when processing token at timestep $i$ and adding it to the hidden state in the encoder at each timestep $j$ $h_j$. That is why this form of attention is referred to as "additive" attention.
 
@@ -555,7 +555,7 @@ We then map the numbers to a probability distribution using the $softmax$ functi
 
  Note that we use a probability distribution rather than a hard cutoff when determining which tokens are important. Some tokens may be less important than others, but have some importance. 
 
-### Scaled dot-product attention
+#### Scaled dot-product attention
 
 When people today refer to "attention" they are generally referring to the scaled dot-product attention rather than the previously discussed additive attention. There are several reasons for this.
 
@@ -587,7 +587,7 @@ We then take the $softmax$, resulting in a probability for each timestep $t$.
 
 Finally, we multiply this by the matrix $V$. The resulting vector is of size $d_v$ and each element is a weighted sum of importances calculated from the attention weights in the previous step.
 
-## Measuring performance of translation tasks: BLEU score
+### Measuring performance of translation tasks: BLEU score
 
 How do we measure the correctness of a machine-translated output?
 
@@ -623,7 +623,7 @@ At a high level, the bleu score computes an average of precisions for $n$-grams 
 
 Let's take a look at an example
 
-### example
+#### example
 
 ```python
 import evaluate
@@ -676,7 +676,7 @@ So in this case all the $n$-gram precisions up to $4$ are $1.0$. But the transla
 
 A brevity penalty is calculated. The way it is calculated is outside of the scope of this article. See the {% cite 10.3115/1073083.1073135 %} for the equation. In this case the brevity penalty is $0.47$. The brevity penalty is multiplied with the $n$-gram precisions to get a final bleu score of $0.47$.
 
-### Bleu score problems
+#### Bleu score problems
 
 However, the bleu score is not a perfect metric. 
 
@@ -692,11 +692,11 @@ See [this page](https://huggingface.co/spaces/evaluate-metric/bleu) for more dis
 
 Regardless, bleu score is the standard for evaluating machine translations in an automated way.
 
-# Experiments and results
+## Experiments and results
 
 Now I'll actually implement both the RNN encoder-decoder model from {% cite 10.5555/2969033.2969173 %} and the RNN encoder-decoder model with attention from {% cite DBLP:journals/corr/BahdanauCB14 %}, evaluate it on the French to English translation task of the {% cite bojar-etal-2014-findings %} dataset, and compare results to the papers.
 
-## Dataset
+### Dataset
 
 In {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %}, they use the {% cite bojar-etal-2014-findings %} (Workshop on Machine Translation) English-French parallel corpora dataset which contains the following:
 
@@ -739,20 +739,20 @@ English:
 > And if you are really worried about that, gold might indeed be the most reliable hedge.
 
 
-## Model
+### Model
 
 I used an encoder-decoder model using a GRU in both the encoder and decoder. The encoder is bidirectional. The hidden state size in the forward and backward directions of the encoder is $1000$ and in the decoder is $1000$. The embedding dimensionality in both the encoder and decoder is $1000$. Both the encoder and decoder have $4$ layers. For attention, I used the scaled dot-product attention with $d_v$ equal to $1000$. The source vocab size and target vocab size were set to $30,000$. The models with attention and without attention contains ~$189M$ trainable params.
 
 For comparison, {% cite 10.5555/2969033.2969173 %} used bidirectional LSTM instead of GRU. The vocab sizes were much larger at $160,000$ for the source and $80,000$ for the target. Their model contain $384M$ params. To the best of my knowledge the attention model implemented is approximately equal to {% cite DBLP:journals/corr/BahdanauCB14 %}, but they leave out some implementation details, so I cannot say for sure.
 
-## Training details
+### Training details
 
 - I used 3 nvidia V100 GPUs to train both the model with attention and model without attention. 
 - Both models were trained for up to 3 epochs, or 72 hours, whichever came first. The model with attention completed ~3 epochs in 72 hours, while the model without attention completed 3 epochs. 
 - $AdamW$ optimizer using cosine annealing with warmup learning rate scheduler was used. Warmup number of steps is $2000$, min learning rate is $6e^{-5}$ and max learning rate is $6e^{-4}$
 - Cross entropy loss was used between the output sequence of tokens with highest probabilty and the target.
 
-## Results
+### Results
 
 Results are reported on the WMT'14 test set which contained 3003 english-french pairs.
 
@@ -765,7 +765,7 @@ Results are reported on the WMT'14 test set which contained 3003 english-french 
 
 While the model with attention has better overall performance than the model without, we are not able to reproduce a decrease in performance as the number of input tokens increases. {% cite 10.5555/2969033.2969173 %} also showed that their model without attention is robust to an increase in sentence length even without attention. 
 
-## Random examples
+### Random examples
 
 Let's look at a few randomly chosen translations from the test set.
 
@@ -814,7 +814,7 @@ We see a similar pattern as before. The model with attention pretty much gets it
 
 The model with attention gets it right while the model without attention misses the important phrase <ins>in the fighting</ins> and adds the slightly awkward <ins>during</ins>.
 
-## Failure mode examples
+### Failure mode examples
 
 It's useful to look at examples where the model performs poorly.
 
@@ -826,7 +826,7 @@ Interesting, it looks like the model is having trouble because there are multipl
 
 This is a failure mode that would definitely need to be worked on, possibly by splitting on period and translating each sentence separately.
 
-## Impact of beam search
+### Impact of beam search
 
 Later, in the section [sequence generation](#sequence-generation) I'll describe different sequence generation methods including Beam search and greedy sequence generation. The above results are using beam search using a beam width of 10. Briefly, greedy will choose the token with highest probability at each decoding step, while beam search will keep all partial sequences and will maintain a list of top performing "beams" which can replaced if a more likely sequence is found at any iteration of beam search. Greedy has the downside that it might choose a token that is locally optimal but which produces a suboptimal sequence but has the upside that it is significantly faster than beam search. I'll describe what this means in more detail in the later section.
 
@@ -843,9 +843,9 @@ We can see from the figure below that beam search in general improves performanc
 
  ![bleu diff](/assets/img/2024-06-22-sequence_to_sequence_translation/beam_search_diff.png)
 
-# Implementation details
+## Implementation details
 
-## <a name="tokenization"></a>Tokenization
+### <a name="tokenization"></a>Tokenization
 
 In {% cite DBLP:journals/corr/BahdanauCB14 %}, tokenization was treated as an after-thought. They say 
 > After a usual tokenization, ...
@@ -853,7 +853,7 @@ In {% cite DBLP:journals/corr/BahdanauCB14 %}, tokenization was treated as an af
 However I soon realized that tokenization is an important topic and can influence the model in many ways. Curious what SOTA LLMs use, I found that it is more common to use an algorithm called Byte-pair encoding algorithm, for example as discussed in {% cite Radford_Wu_Child_Luan_Amodei_Sutskever_2019 %}. 
 
 
-### Byte-pair encoding algorithm
+#### Byte-pair encoding algorithm
 
 As mentioned previously, tokenization is the way by which we feed the inputs to the model. Unfortunately, there is no way currently to feed the inputs directly to the model. The inputs must be chunked into discrete **tokens**.
 
@@ -886,7 +886,7 @@ Note that this solves the problems mentioned above. We are using a byte-level re
 {: .box-note}
 **Side note:** The BPE algorithm was originally developed as a [compression algorithm](https://web.archive.org/web/20160326130908/http://www.csse.monash.edu.au/cluster/RJK/Compress/problem.html) in 1994. 
 
-### Implementation of BPE
+#### Implementation of BPE
 
 OpenAI has released their [BPE algorithm](https://github.com/openai/tiktoken) but it can only be used for inference.
 
@@ -896,7 +896,7 @@ See the excellent overview of BPE and sentencepiece by Andrej Karpathy
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/zduSFxRajkE?si=M2xaub0-iBADHwnY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-## Using multiple GPUs
+### Using multiple GPUs
 
 To train on multiple GPUs, the `torch.nn.parallel.DistributedDataParallel` package in pytorch was used. Since it was the first time using it, I'll explain briefly how it works.
 
@@ -916,7 +916,7 @@ Important envionrment variables are `RANK` and `LOCAL_RANK`. `RANK` is the globa
 {: .box-note}
 **Note:** Only log and check validation performance from the master process (the one where `RANK == 0`)!
 
-## Padding
+### Padding
 
 During development of the model I experienced a strange issue that took all day to debug. I'll first describe why padding is needed, the issue I encountered, and then the solution.
 
@@ -927,17 +927,17 @@ Let's say we had this minibatch:
 
 The 3 padding tokens in the 1st sequence are required because the 1st sequence is shorter than the 2nd sequence.
 
-### the issue
+#### the issue
 
  What I encountered is that when I passed the 1st sequence as is with the 3 padding tokens through the encoder-decoder, the output translation was, let's say "J'ai des chaussettes." But when I removed the padding tokens, and just passed the sequence by itself without padding tokens, I got a totally different translation.
 
  This to me was a bad sign. The model should not be sensitive to the padding tokens; they should be ignored. Their only purpose should be to make the sequences in the minibatch the same length and shouldn't have any meaning.
 
-### the solution
+#### the solution
 
  Padding affects the model in a few ways.
 
-#### encoding
+##### encoding
  The 1st way is when we encode the input sequences in the minibatch, the RNN must iterate through each token in the sequence, including the pad tokens. We would like for the encoder to learn that the pad tokens are irrelevent, which is what I thought would happen with enough data. But clearly this was not the case. How can we force the encoder to ignore the pad tokens?
 
  It turns out in pytorch there is function to force RNNs to ignore the pad tokens. 
@@ -953,7 +953,7 @@ packed_embedded = torch.nn.utils.rnn.pack_padded_sequence(
 
  Given the tensor with the pad tokens, and the lengths of each sequence in the tensor, `torch.nn.utils.rnn.pack_padded_sequence` will construct a `PackedSequence` object which any RNN module in pytorch knows how to take as input. The RNN will know to ignore the pad tokens.
 
- #### loss function
+ ##### loss function
 
 In the cross-entropy loss we are comparing the predicted token with the actual token for a minibatch of predicted and actual sequences, e.g.
 
@@ -966,7 +966,7 @@ loss = criterion(
 
 What happens if the sequences are padded with a bunch of pad tokens? If we evaluate the loss where a significant number of `decoder_outputs` are pad tokens and `target_tensor` are pad tokens, then the loss will be biased towards the pad tokens. We want the loss to reflect the actual tokens, and not the pad tokens. It turns out that `CrossEntropyLoss` supports `ignore_index` which will ignore a specific index in the loss calculation; in this case it should be set to the `<pad>` token.
 
-#### attention
+##### attention
 The other place where the pad token needs to be ignored is when calculating the attention weights. We don't want the model to pay attention to the pad token.
 
 If we look again at the equation for attention:
@@ -984,7 +984,7 @@ scores = scores.masked_fill(mask.unsqueeze(1), float('-inf'))
 
 where $mask$ is $1$ where the pad tokens are.
 
-#### does it work?
+##### does it work?
 
 Hopefully all this effort to ignore the pad token works and the model is insensitive to the number of pad tokens, which wasn't the case when I didn't ignore the pad token in the RNN encoder and in the attention layer.
 
@@ -1045,11 +1045,11 @@ output with no pad tokens appended to input == output with 44 pad tokens appende
 
 Great, the model seems to be ignoring the pad tokens!
 
-## Sequence generation
+### Sequence generation
 
 When we're producing the output sequences it turns out that there are multiple ways to go about it and some are better than others.
 
-### greedy search
+#### greedy search
 
 The simplest is called "greedy search" and involves just selecting the token with the highest predicted probability of being the correct token at each timestep.
 
@@ -1057,7 +1057,7 @@ I thought this would be sufficient, as the model is being optimized to learn whi
 
 However, it turns out that this can produce suboptimal, awkwardly phrased, or strange outputs. It can select a bad token at timestep $t$ and then this creates a bad sequence going forward.
 
-### beam search
+#### beam search
 
 A solution to this is to use "beam search". {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %} both use beam search to produce the output sequences. At first I skipped over this detail as I thought it might have been a relic of the past, but it turns out to be an important detail.
 
@@ -1069,7 +1069,7 @@ At each timestep $t$, beam search will choose the $B$ most likely next tokens, a
 
 We start by choosing $B$ most likely tokens to start the sequence. Then for each of these sequences, we select the $B$ most likely next tokens, producing $B^2$ possible sequences. From this list of possible sequences, we choose the $B$ most promising by comparing the $log-likelihood$ of each sequence and choosing the $B$ sequences with the lowest $log-likelihood$. We complete the search once all $B$ beams terminate with an `end of sentence` token or when we've done a certain number of iterations of search, whichever comes first.
 
-#### beam search example
+##### beam search example
 
 As an example, let's consider the following input:
 
@@ -1152,7 +1152,7 @@ It continues like this for 28 iterations. The final list of beam candidates are:
 We can see that 2 of the sequences are incomplete, but because $B=2$ of the sequences are complete, beam search terminates. This is a  bias of beam search that it prefers shorter sequences.
 
 
-## Handling unknown tokens
+### Handling unknown tokens
 
 In previous attempts at language modeling, a fixed size vocabulary would be constructed and used for training. What happens when the model sees an unknown token at test time? What should the model do? The model was typically just output a special `<UNK>` token, standing for unknown. But this is not useful. We don't want to see that. When using chatgpt for example, we don't want to see `<UNK>` in the output, but what if a user enters something it has never seen before?
 
@@ -1198,7 +1198,7 @@ What is the model's output?
 However, this shows that we can output something rather than `<UNK>`.
 
 
-# Conclusion
+## Conclusion
 
 We implemented an RNN model without attention similar to {% cite 10.5555/2969033.2969173 %} and a model with attention similar to {% cite DBLP:journals/corr/BahdanauCB14 %} and found that the model with attention has better overall performance than the model without attention as evaluated by the BLEU score. However, {% cite DBLP:journals/corr/BahdanauCB14 %} reports a steep decrease in BLEU score as the sentence length increases, which we were not able to reproduce. Our results are in line with {% cite 10.5555/2969033.2969173 %} which reported that the model without attention is robust to sentence length, but the paper that introduced attention is the very famous paper while the model without attention that reported robustness to sentence length is not nearly as cited. 
 
