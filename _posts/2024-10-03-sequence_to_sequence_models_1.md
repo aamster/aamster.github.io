@@ -108,20 +108,29 @@ In fact, early models would do better at shorter sentences than longer ones beca
 the neural machine translation model degrades
 quickly as the length of a source sentence increases. 
 
-<figure style="text-align: center;">
+<figure style="text-align: center;" id="ChoBleuVsSentLen">
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/rnn_enc_decreasing_perf_sent_len.png" alt="bleu vs sentence len">
-  <figcaption style="font-style: italic; color: gray;">Exponential dropoff in BLEU score (measure of translation quality) of deep neural network model as input/target length increases</figcaption>
+  <figcaption style="font-style: italic; color: gray;">Figure 1: Figure from {% cite cho-etal-2014-properties %}. Exponential dropoff in BLEU score (measure of translation quality) of deep neural network model as input/target length increases</figcaption>
 </figure>
 
 However, {% cite 10.5555/2969033.2969173 %} states 
 > We were surprised to discover that the LSTM did well on long sentences
 
- ![Sutskever bleu vs sentence len](/assets/img/2024-06-22-sequence_to_sequence_translation/sutskever_sent_len.png)
+
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/sutskever_sent_len.png" alt="Sutskever bleu vs sentence len">
+  <figcaption style="font-style: italic; color: gray;">Figure 2: Figure from {% cite 10.5555/2969033.2969173 %}. LSTM (recurrent neural network model) performed well even on the longest inputs.</figcaption>
+</figure>
 
 And then again in the seminal paper {% cite DBLP:journals/corr/BahdanauCB14 %}, 
 which I'll discuss in more detail later shows the same problem, that the model struggles with longer sentences:
 
- ![Bhadanau perf \label{Figure 2}](/assets/img/2024-06-22-sequence_to_sequence_translation/bhadanau_perf.png)
+
+<figure style="text-align: center;" id="figure3">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/bhadanau_perf.png" alt="Bhadanau perf">
+  <figcaption style="font-style: italic; color: gray;">Figure 3: Figure from {% cite DBLP:journals/corr/BahdanauCB14 %}. 
+LSTM models without attention show exponential dropoff in BLEU score (translation quality) while the model with attention is stable across input lengths.</figcaption>
+</figure>
 
 Notice how the performance (BLEU score, I'll discuss in more detail later in the article) degrades rapidly
 as the sentence length increases in the RNNenc-50 and RNNenc-30 models.
@@ -235,7 +244,10 @@ as you can see $$W_{hh}$$ is multiplied with $$h_t$$, $$W_{xh}$$ is multiplied w
 
 The resulting vector is then passed through the a function $$tanh$$ which is just a function that maps $$(-\infty, +\infty) \to (-1, 1)$$. It looks like this:
 
- ![tanh](/assets/img/2024-06-22-sequence_to_sequence_translation/Hyperbolic_Tangent.svg)
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/Hyperbolic_Tangent.svg">
+  <figcaption style="font-style: italic; color: gray;">Figure 4: $$tanh$$</figcaption>
+</figure>
 
 that means that the hidden state is a vector $$h_t \in \mathbb{R}^h$$ where each element is between $$(-1, 1$$)
 
@@ -308,8 +320,10 @@ For each token id we looked up an embedding vector. The embedding vector is a fi
 
 Mapping the sequence of tokens into a sequence of vectors gives us:
 
-
- ![embedding](/assets/img/2024-06-22-sequence_to_sequence_translation/embedding.png)
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/embedding.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 5: Mapping tokens to numeric vectors (embeddings)</figcaption>
+</figure>
 
 We initialized the hidden state
 $$
@@ -456,7 +470,10 @@ sequence given a source sequence.
 
 Here is a picture of what that would look like for the sequence "I have socks." -> יש לי גרביים 
 
- ![encoder decoder](/assets/img/2024-06-22-sequence_to_sequence_translation/encoder_decoder.png)
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/encoder_decoder.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 6: Encoding/decoding "I have socks." -> יש לי גרביים</figcaption>
+</figure>
 
  You'll notice a few things from this picture of the encoder-decoder architecture for translation.
 
@@ -490,9 +507,7 @@ But what if the sentence was
 
 It might be difficult to encode all of the meaning into a fixed length vector representation of numbers so that the decoder can produce a correct translation. It is sort of like the game of "telephone"; the meaning and nuances would be lost in translation.
 
-This is the same pattern that {% cite cho-etal-2014-properties %} observed, see \ref{mylabel}
-
- ![rnn sentence length bad](/assets/img/2024-06-22-sequence_to_sequence_translation/rnn_sentence_length_bad.png)
+This is the same pattern that {% cite cho-etal-2014-properties %} observed, see [Figure 1](#ChoBleuVsSentLen)
 
 The bleu score on the vertical axis is a measure of translation quality, which I'll discuss later in the article. Notice how as sentence length increases there is an exponential dropoff in translation quality.
 
@@ -500,13 +515,11 @@ The bleu score on the vertical axis is a measure of translation quality, which I
 
 This paper is cited as the paper that introduced attention in neural networks. Attention is the backbone of the transformer architecture which is the architecture used to train LLMs, so it's sort of a big deal.
 
-In the following plot, they compared an encoder-decoder model without attention, as we've discussed above, with a model using attention.
+In [Figure 3](#figure3), they compared an encoder-decoder model without attention, as we've discussed above, with a model using attention.
 
- ![rnn sentence length bad](/assets/img/2024-06-22-sequence_to_sequence_translation/attention.png)
+RNNenc-* is the same model we looked at before. We can see a similar dropoff in translation quality as the sentence length increases. 
 
- RNNenc-* is the same model we looked at before. We can see a similar dropoff in translation quality as the sentence length increases. 
-
- Compare this to RNNsearch-* which is a model with attention. Both RNNsearch models have better performance, and interestingly, the RNNsearch-50 model shows no sign of decrease in performance as the sentence length increases.
+Compare this to RNNsearch-* which is a model with attention. Both RNNsearch models have better performance, and interestingly, the RNNsearch-50 model shows no sign of decrease in performance as the sentence length increases.
 
 #### what is attention?
 
@@ -548,11 +561,18 @@ The result of $$a(s_{i-1}, h_j)$$ will be $$\in \mathbb{R}^{t}$$ where $$t$$ is 
 
 It will look like:
 
- ![attention weights](/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights.png)
+
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 7: attention weights</figcaption>
+</figure>
 
 We then map the numbers to a probability distribution using the $$softmax$$ function. The attention weights will then look like:
 
- ![attention weights](/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights_softmax.png)
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights_softmax.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 8: attention weights passed through the $$softmax$$ function</figcaption>
+</figure>
 
  This has the interpretation of "which tokens in the input are most important for outputting the current token in the decoder?"
 
@@ -620,7 +640,11 @@ BLEU score is the standard metric used to evaluate translation models. It was pr
 
 See this interesting figure in the paper in which the authors found the bleu score to correlate with how bilingual humans rated the quality of a translation:
 
- ![bleu human correlation](/assets/img/2024-06-22-sequence_to_sequence_translation/bleu_human_correlation.png)
+
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/bleu_human_correlation.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 9: Figure from {% cite 10.3115/1073083.1073135 %}. BLEU score correlates with bilingual judgement of translation quality.</figcaption>
+</figure>
 
 At a high level, the bleu score computes an average of precisions for $$n$$-grams up to a certain $$n$$.
 
@@ -764,7 +788,13 @@ Results are reported on the WMT'14 test set which contained 3003 english-french 
 |With attention | 0.297|
 | Without attention | 0.261 |
 
- ![attention vs no attention bleu](/assets/img/2024-06-22-sequence_to_sequence_translation/attention_vs_no_attention_bleu.png)
+
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_vs_no_attention_bleu.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 10: Number of input tokens vs BLEU score for the model using attention and the model without attention on the WMT'14 test set.
+Both models showed increase in BLEU score as the number of input tokens increased. The scatter points are the actual BLEU score for each example, while the lines are lines of best fit to the data.
+Note that this figure agrees with {% cite 10.5555/2969033.2969173 %} but disagrees with {% cite DBLP:journals/corr/BahdanauCB14 %}.</figcaption>
+</figure>
 
 While the model with attention has better overall performance than the model without, we are not able to reproduce a decrease in performance as the number of input tokens increases. {% cite 10.5555/2969033.2969173 %} also showed that their model without attention is robust to an increase in sentence length even without attention. 
 
@@ -844,7 +874,11 @@ So beam search slightly improves overall performance, but at the cost of taking 
 
 We can see from the figure below that beam search in general improves performance compared to greedy, but also produces an translation of equivalent quality to greedy more generally and sometimes worse.
 
- ![bleu diff](/assets/img/2024-06-22-sequence_to_sequence_translation/beam_search_diff.png)
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/beam_search_diff.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 11: Impact of beam search on BLEU score. 
+The histogram shows slight overall improvement in BLEU score when beam search is used.</figcaption>
+</figure>
 
 ## Implementation details
 
@@ -926,7 +960,10 @@ During development of the model I experienced a strange issue that took all day 
 When training we construct minibatches to parallelize the computation. We must pass a single tensor to the model, and so all sequences must be made to be the same length. This means that if the sequences are different lengths, then we need to add a special token to any sequence which is shorter than the longest sequence.
 
 Let's say we had this minibatch:
- ![padding](/assets/img/2024-06-22-sequence_to_sequence_translation/padding.png)
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/padding.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 12: Example minibatch with padding</figcaption>
+</figure>
 
 The 3 padding tokens in the 1st sequence are required because the 1st sequence is shorter than the 2nd sequence.
 
