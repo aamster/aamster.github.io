@@ -108,7 +108,10 @@ In fact, early models would do better at shorter sentences than longer ones beca
 the neural machine translation model degrades
 quickly as the length of a source sentence increases. 
 
- ![bleu vs sentence len](/assets/img/2024-06-22-sequence_to_sequence_translation/rnn_enc_decreasing_perf_sent_len.png)
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/rnn_enc_decreasing_perf_sent_len.png" alt="bleu vs sentence len">
+  <figcaption style="font-style: italic; color: gray;">Exponential dropoff in BLEU score (measure of translation quality) of deep neural network model as input/target length increases</figcaption>
+</figure>
 
 However, {% cite 10.5555/2969033.2969173 %} states 
 > We were surprised to discover that the LSTM did well on long sentences
