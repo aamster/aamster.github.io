@@ -132,7 +132,7 @@ which I'll discuss in more detail later shows the same problem, that the model s
 LSTM models without attention show exponential dropoff in BLEU score (translation quality) while the model with attention is stable across input lengths.</figcaption>
 </figure>
 
-Notice how the performance (BLEU score, I'll discuss in more detail later in the article) degrades rapidly
+Notice how the performance (BLEU score, I'll discuss in more detail in the section [Measuring performance of translation tasks: BLEU score](#measuring-performance-of-translation-tasks-bleu-score)) degrades rapidly
 as the sentence length increases in the RNNenc-50 and RNNenc-30 models.
 
 So there is a discrepancy among these papers when discussing the problem of sentence length. 
@@ -142,14 +142,21 @@ The problem of sentence length would lead to the idea of attention in Bahdanau e
 
 #### Vocabularies are large
 
-In language models, we have to turn the text into a series of tokens. Typically, the tokens were words but in modern LLMs the tokens are constructed using the [byte pair encoding algorithm](https://en.wikipedia.org/wiki/Byte_pair_encoding) in which the tokens are not necessarily words but can be phrases, sub-words or single characters. I'll go into more detail about the BPE algorithm later in the article.
+In language models, we have to turn the text into a series of **tokens**. Tokens are the smallest unit of input when using deep neural network models to model language.
 
-Once the data is tokenized, then we have to map each token to a vector of numbers which is achieved using an embedding matrix, and at prediction time we have to predict a probability for each of the tokens in our vocabulary. 
-So a large vocabulary increases memory requirements by the model due to the increase in size of the embedding matrix for every token in the vocabulary, 
-as well as the increase in number of neurons for predicting the output token, which is usually a linear transformation.
+The vocabulary is then the set of possible tokens. We could just use single characters as the set of tokens, which would require a small vocabulary. 
+However using single characters poses other difficulties as it would increase the input/output size if every character was modeled separately. We would like something flexible 
+enough to handle individual characters as the smallest token, up to entire phrases. See  {% cite Radford_Wu_Child_Luan_Amodei_Sutskever_2019 %} for this discussion.
 
-According to the website [open source Shakespeare](https://www.opensourceshakespeare.org/statistics/) there are 28,829 unique words in all of Shakespeare's works, and apparently 40% of those words are used only once.
+Vocabularies are large. According to the website [open source Shakespeare](https://www.opensourceshakespeare.org/statistics/) there are 28,829 unique words in all of Shakespeare's works, and apparently 40% of those words are used only once.
 That is a lot of words, but relatively modern LLMs (e.g. GPT2) use a token size of ~50,000 {% cite Radford_Wu_Child_Luan_Amodei_Sutskever_2019 %}, since these models need to understand more than just the vocabulary of Shakespeare. 
+
+Large vocabulary sizes pose some challenges. The first is that once the data is tokenized, we typically will construct a vector of real numbers, as this is easier to model than simply providing an index. 
+This vector is called an embedding vector and the set of embedding vectors for all tokens in the vocabulary the embedding matrix. A large vocabulary size means a large embedding matrix.
+
+Another challenge with a large vocabulary size is that when we predict each token at the decoding step, we typically use a linear transformation, which requires
+hidden $$\times$$ number of tokens weights, which increases compute. For example if the hidden size in the decoder is $$1000$$ and the number of tokens is $$30000$$ then
+we would require $$1000 \times 30000 = 3e7$$ weights (multiplications/additons) in this layer alone.
 
 Large vocabulary sizes also mean that we need a very large dataset in order to capture enough examples for every token 
 in the vocabulary in order to train each token sufficiently. For example rarer tokens might be undertrained.
@@ -246,7 +253,7 @@ The resulting vector is then passed through the a function $$tanh$$ which is jus
 
 <figure style="text-align: center;">
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/Hyperbolic_Tangent.svg">
-  <figcaption style="font-style: italic; color: gray;">Figure 4: $$tanh$$</figcaption>
+  <figcaption style="font-style: italic; color: gray;">Figure 4: tanh</figcaption>
 </figure>
 
 that means that the hidden state is a vector $$h_t \in \mathbb{R}^h$$ where each element is between $$(-1, 1$$)
