@@ -383,9 +383,9 @@ body[data-jp-theme-light="false"] {
 }
 
 .jp-Notebook .jp-CodeMirrorEditor .highlight pre {
-  overflow-x: auto;
+  overflow-x: auto; !important;
 }
 
 jp-Notebook {
-  overflow-y: hidden;
+  overflow-y: hidden; !important;
 }
