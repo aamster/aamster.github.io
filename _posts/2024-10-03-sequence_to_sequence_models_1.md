@@ -243,6 +243,7 @@ There are 2 weight matrices involved:
 $$
 W_{hh}\in \mathbb{R}^{h \times h}
 $$
+
 $$
 W_{xh}\in \mathbb{R}^{x \times h}
 $$
@@ -266,56 +267,13 @@ Let's tokenize the sentence as ["I", "have", "socks", "."]
 
 Let the embedding vector be $$x \in \mathbb{R}^2$$
 
-Let the hidden state $$h \in \mathbb{R}^3$$.
+Let the hidden state be $$h \in \mathbb{R}^3$$.
 
 
-```python
-import torch
-
-
-class VanillaRNN:
-    def __init__(self):
-        self._initial_state = torch.zeros(3)
-        self.Wxh = torch.nn.Linear(in_features=2, out_features=3)
-        self.Whh = torch.nn.Linear(in_features=3, out_features=3)
-        self.embedding = torch.nn.Embedding(num_embeddings=4, embedding_dim=2)
-
-    def forward(self, seq):
-        h_t = self._initial_state
-        outs = []
-        for x_t in seq:
-            x_t = self.embedding(torch.tensor(x_t))
-            h_t = self._f(h_t, x_t)
-            outs.append(h_t)
-        outs = torch.stack(outs)
-        return outs, h_t
-
-    def _f(self, h_t: torch.tensor, x_t: torch.tensor):
-        return torch.tanh(self.Wxh(x_t) + self.Whh(h_t))
-
-```
-
-```python
-    torch.random.manual_seed(1234)
-
-    with torch.no_grad():
-        rnn = VanillaRNN()
-        vocab = {'I': 0, 'have': 1, 'socks': 2, '.': 3}
-        outs, h_t = rnn.forward(seq=[vocab[x] for x in ['I', 'have', 'socks', '.']])
-```
-
-
-`outs`:
-```text
-tensor([[-0.3126,  0.5246,  0.6447],
-        [ 0.0277,  0.3934,  0.8409],
-        [-0.8055, -0.0275,  0.0972],
-        [-0.2049,  0.3322,  0.3161]])
-```
-`h_t`
-```text
-tensor([-0.2049,  0.3322,  0.3161])
-```
+{::nomarkdown}
+{% assign jupyter_path = 'assets/jupyter/2024-10-03-sequence_to_sequence_translation/vanilla_rnn.ipynb' | relative_url %}
+{% jupyter_notebook jupyter_path %}
+{:/nomarkdown}
 
 **What has happened here?**
 
