@@ -3756,3 +3756,11 @@ div#maintoolbar {
 #header-container {
   display: none !important;
 }
+
+.jp-Notebook .jp-CodeMirrorEditor .highlight pre {
+  overflow-x: auto !important;
+}
+
+.jp-Notebook {
+  overflow-y: hidden !important;
+}
