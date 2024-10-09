@@ -380,8 +380,12 @@ body[data-jp-theme-light="false"] {
   --jp-switch-true-position-color: var(--md-orange-700);
 
   @import "jupyter-monokai";
+}
 
-  .jp-Notebook .jp-CodeMirrorEditor .highlight pre {
-    overflow-x: auto;
-  }
+.jp-Notebook .jp-CodeMirrorEditor .highlight pre {
+  overflow-x: auto;
+}
+
+jp-Notebook {
+  overflow-y: hidden;
 }
