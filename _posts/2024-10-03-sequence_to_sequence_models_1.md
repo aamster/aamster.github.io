@@ -299,46 +299,54 @@ then we iterated over each token, and updated the hidden state for each token.
 
 In detail:
 
-1. extract embedding vector for token "I", update hidden state $$h_1$$
+1. extract embedding vector for token "I", $$x_1$$, and update hidden state $$h_1$$
 $$
 x_1 = \begin{bmatrix}-0.8330 & -0.4121\end{bmatrix}
 $$
+
 $$
 h_1 = tanh(W_{hh}h_0 + W_{xh}x_1 + b_{hh} + b_{xh})
 $$
+
 $$
 h_1 = \begin{bmatrix}-0.3126 &  0.5246 &  0.6447\end{bmatrix}
 $$
 
-2. extract embedding vector for token "have", update hidden state $$h_2$$
+2. extract embedding vector for token "have", $$x_2$$, and update hidden state $$h_2$$
 $$
 x_2 = \begin{bmatrix}-1.1774 &  0.7259\end{bmatrix}
 $$
+
 $$
 h_2 = tanh(W_{hh}h_1 + W_{xh}x_2 + b_{hh} + b_{xh})
 $$
+
 $$
 h_2 = \begin{bmatrix}0.0277 &  0.3934 &  0.8409\end{bmatrix}
 $$
 
-3. extract embedding vector for token "socks", update hidden state $$h_3$$
+3. extract embedding vector for token "socks", $$x_3$$, and update hidden state $$h_3$$
 $$
 x_3 = \begin{bmatrix}0.5375 & 0.0382\end{bmatrix}
 $$
+
 $$
 h_3 = tanh(W_{hh}h_2 + W_{xh}x_3 + b_{hh} + b_{xh})
 $$
+
 $$
 h_3 = \begin{bmatrix}-0.8055 & -0.0275 &  0.0972\end{bmatrix}
 $$
 
-4. extract embedding vector for token ".", update hidden state $$h_4$$
+4. extract embedding vector for token ".", $$x_4$$, and update hidden state $$h_4$$
 $$
 x_4 = \begin{bmatrix}-0.6446 & -1.0341\end{bmatrix}
 $$
+
 $$
 h_4 = tanh(W_{hh}h_3 + W_{xh}x_4 + b_{hh} + b_{xh})
 $$
+
 $$
 h_4 = \begin{bmatrix}-0.2049 &  0.3322 &  0.3161\end{bmatrix}
 $$
@@ -363,10 +371,10 @@ Why are RNNs called "recurrent" neural networks?
 
 The name "recurrent" in "recurrent neural network" comes from the fact that the hidden state $$h_{t-1}$$ is recursively used to calculate the new hidden state $$h_t$$
 
-If we unpack a single update of $$\textcolor{white}{h_t}$$, we get:
+If we unpack a single update of $$\textcolor{blue}{h_t}$$, we get:
 
 $$
-\textcolor{white}{h_t = tanh(W_{hh}\textcolor{lime}{h_{t-1}} + W_{xh}x_t + b_{hh} + b_{xh})}
+\textcolor{blue}{h_t = tanh(W_{hh}\textcolor{lime}{h_{t-1}} + W_{xh}x_t + b_{hh} + b_{xh})}
 $$
 
 if we unpack $$\textcolor{lime}{h_{t-1}}$$ we get:
@@ -378,7 +386,7 @@ $$
 Plugging this into the previous equation, we get:
 
 $$
-\textcolor{white}{h_t = tanh(W_{hh}(}\textcolor{lime}{tanh(W_{hh}\textcolor{orange}{h_{t-2}} + W_{xh}x_{t-1} + b_{hh} + b_{xh})}\textcolor{white}{) + W_{xh}x_t + b_{hh} + b_{xh})}
+\textcolor{blue}{h_t = tanh(W_{hh}(}\textcolor{lime}{tanh(W_{hh}\textcolor{orange}{h_{t-2}} + W_{xh}x_{t-1} + b_{hh} + b_{xh})}\textcolor{blue}{) + W_{xh}x_t + b_{hh} + b_{xh})}
 $$
 
 If we unpack this for one more timestep, $$\textcolor{orange}{h_{t-2}}$$ would be 
@@ -389,7 +397,7 @@ $$
 Plugging in $$\textcolor{orange}{h_{t-2}}$$ we get:
 
 $$
-\textcolor{white}{h_t = tanh(W_{hh}(}\textcolor{lime}{tanh(W_{hh}(}\textcolor{orange}{tanh(W_{hh}h_{t-3} + W_{xh}x_{t-2} + b_{hh} + b_{xh})}\textcolor{lime}{) + W_{xh}x_{t-1} + b_{hh} + b_{xh})}\textcolor{white}{) + W_{xh}x_t + b_{hh} + b_{xh})}
+\textcolor{blue}{h_t = tanh(W_{hh}(}\textcolor{lime}{tanh(W_{hh}(}\textcolor{orange}{tanh(W_{hh}h_{t-3} + W_{xh}x_{t-2} + b_{hh} + b_{xh})}\textcolor{lime}{) + W_{xh}x_{t-1} + b_{hh} + b_{xh})}\textcolor{blue}{) + W_{xh}x_t + b_{hh} + b_{xh})}
 $$
 
 The full recursive equation would be:
@@ -399,10 +407,10 @@ h_t = tanh(W_{hh}(tanh(W_{hh}(...tanh(W_{hh}h_0 + W_{xh}x_1 + b_{hh} + b_{xh})..
 $$
 
 
-- The calculation of the hidden state $$\textcolor{white}{h_t}$$ involves the previous $$t-1$$ hidden states $$\textcolor{lime}{h_{t-1}}, \textcolor{orange}{h_{t-2}}, ... h_{0}$$
-- The hidden state calculation $$\textcolor{white}{h_t}$$ involves each of the previous $$t-1$$ tokens in the sequence $$\textcolor{lime}{x_{t-1}}, \textcolor{orange}{x_{t-2}}, ... x_{0}$$. This enables the model to "see" the entire sequence.
+- The calculation of the hidden state $$\textcolor{blue}{h_t}$$ involves the previous $$t-1$$ hidden states $$\textcolor{lime}{h_{t-1}}, \textcolor{orange}{h_{t-2}}, ... h_{0}$$
+- The hidden state calculation $$\textcolor{blue}{h_t}$$ involves each of the previous $$t-1$$ tokens in the sequence $$\textcolor{lime}{x_{t-1}}, \textcolor{orange}{x_{t-2}}, ... x_{0}$$. This enables the model to "see" the entire sequence.
 - The weights and biases $$W_{hh}$$, $$W_{xh}$$, $$b_{hh}$$, $$b_{xh}$$ are used repeatedly when processing the sequence for each hidden state $$h_t$$
-- There are a lot of matrix-matrix multiplications ($$\textcolor{white}{W_{hh}} * \textcolor{lime}{W_{hh}} * \textcolor{orange}{W_{hh}}$$). This can lead to very large numbers (exploding gradients) or very small numbers (vanishing gradients)
+- There are a lot of matrix-matrix multiplications ($$\textcolor{blue}{W_{hh}} * \textcolor{lime}{W_{hh}} * \textcolor{orange}{W_{hh}}$$). This can lead to very large numbers (exploding gradients) or very small numbers (vanishing gradients)
 
 
 {: .box-note}
