@@ -300,6 +300,7 @@ then we iterated over each token, and updated the hidden state for each token.
 In detail:
 
 1. extract embedding vector for token "I", $$x_1$$, and update hidden state $$h_1$$
+
 $$
 x_1 = \begin{bmatrix}-0.8330 & -0.4121\end{bmatrix}
 $$
@@ -313,6 +314,7 @@ h_1 = \begin{bmatrix}-0.3126 &  0.5246 &  0.6447\end{bmatrix}
 $$
 
 2. extract embedding vector for token "have", $$x_2$$, and update hidden state $$h_2$$
+
 $$
 x_2 = \begin{bmatrix}-1.1774 &  0.7259\end{bmatrix}
 $$
@@ -326,6 +328,7 @@ h_2 = \begin{bmatrix}0.0277 &  0.3934 &  0.8409\end{bmatrix}
 $$
 
 3. extract embedding vector for token "socks", $$x_3$$, and update hidden state $$h_3$$
+
 $$
 x_3 = \begin{bmatrix}0.5375 & 0.0382\end{bmatrix}
 $$
@@ -339,6 +342,7 @@ h_3 = \begin{bmatrix}-0.8055 & -0.0275 &  0.0972\end{bmatrix}
 $$
 
 4. extract embedding vector for token ".", $$x_4$$, and update hidden state $$h_4$$
+
 $$
 x_4 = \begin{bmatrix}-0.6446 & -1.0341\end{bmatrix}
 $$
@@ -511,9 +515,11 @@ Bahdanau attention adds 3 new parameters:
 $$
 W_a \in \mathbb{R}^{n \times n}
 $$
+
 $$
 U_a \in \mathbb{R}^{n \times 2n}
 $$
+
 $$
 v_a \in \mathbb{R}^{n}
 $$
