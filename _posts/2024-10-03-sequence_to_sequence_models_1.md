@@ -447,7 +447,7 @@ sequence given a source sequence.
 
 Here is a picture of what that would look like for the sequence "I have socks." -> יש לי גרביים 
 
-<figure style="text-align: center;">
+<figure style="text-align: center;" id="figure6">
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/encoder_decoder.png">
   <figcaption style="font-style: italic; color: gray;">Figure 6: Encoding/decoding "I have socks." -> יש לי גרביים</figcaption>
 </figure>
@@ -542,15 +542,15 @@ It will look like:
 
 
 <figure style="text-align: center;">
-  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights.png">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights.png" style="width: 50%">
   <figcaption style="font-style: italic; color: gray;">Figure 7: attention weights</figcaption>
 </figure>
 
 We then map the numbers to a probability distribution using the $$softmax$$ function. The attention weights will then look like:
 
 <figure style="text-align: center;">
-  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights_softmax.png">
-  <figcaption style="font-style: italic; color: gray;">Figure 8: attention weights passed through the $$softmax$$ function</figcaption>
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights_softmax.png" style="width: 50%">
+  <figcaption style="font-style: italic; color: gray;">Figure 8: attention weights passed through the softmax function</figcaption>
 </figure>
 
  This has the interpretation of "which tokens in the input are most important for outputting the current token in the decoder?"
@@ -588,6 +588,21 @@ extremely small gradients. To counteract this effect, we scale the dot products 
 We then take the $$softmax$$, resulting in a probability for each timestep $$t$$. 
 
 Finally, we multiply this by the matrix $$V$$. The resulting vector is of size $$d_v$$ and each element is a weighted sum of importances calculated from the attention weights in the previous step.
+
+#### How is attention different from the previous encoder-decoder approach?
+
+In [Figure 6](#figure6) we showed an encoder-decoder architecture in which a __context vector__ is passed to each decoding step.
+We noted that this context vector is computed from the output of the encoder and is the same at every decoding step.
+We noted that this has the potential problem that the entire input must be encoded into a single meaningful representation.
+
+__Attention__ tries to fix this problem by figuring out what the most relevant bits of the input are for each decoding step.
+In the example long input that we made up above
+> I have socks that are thick and made of wool because it is cold outside; it is comfortable to wear around the house while I look outside at the white snow gently falling to the ground.
+
+when we are translating at the end the phrase "white snow", maybe "socks that are thick and made of wool" is less relevant than "outside" and "gently falling to the ground".
+
+In this way the attention mechanism allows us to pay attention to only the relevant parts of the input for each decoding step, and so we don't have to construct a single meaning of the entire input.
+
 
 ### Measuring performance of translation tasks: BLEU score
 
@@ -631,27 +646,15 @@ Let's take a look at an example
 
 #### example
 
-```python
-import evaluate
-
-predictions = ["I have socks."]
-
-references = [
-    ["In my dresser I have socks."],
-]
-
-bleu = evaluate.load("bleu")
-results = bleu.compute(predictions=predictions, references=references)
-print(results)
-```
-
-```python
-{'bleu': 0.4723665527410147, 'precisions': [1.0, 1.0, 1.0, 1.0], 'brevity_penalty': 0.4723665527410147, 'length_ratio': 0.5714285714285714, 'translation_length': 4, 'reference_length': 7}
-```
+{::nomarkdown}
+{% assign jupyter_path = 'assets/jupyter/2024-10-03-sequence_to_sequence_translation/bleu_score.ipynb' | relative_url %}
+{% jupyter_notebook jupyter_path %}
+{:/nomarkdown}
 
 The bleu score for the prediction `I have socks.` when the reference translation is `In my dresser I have socks.` is $$0.47$$. The bleu score ranges between $$[0, 1]$$ and so a bleu score of $$0.47$$ is decent but not perfect.
 
-Let's break down the calculation further:
+Let's break down the calculation further. We calculate `precision` scores for $$n$$-grams up to $$n$$, in this case 4.
+Precision is defined as $$TP\div{TP + FP}$$, in other words the number of $$n$$-grams that we predict in our translation that are correct.
 
 $$1$$-grams
 
@@ -686,13 +689,13 @@ A brevity penalty is calculated. The way it is calculated is outside of the scop
 
 However, the bleu score is not a perfect metric. 
 
-Implicit in the bleu score calculation is that the text has been tokenized. For example, `I have socks.` is tokenized as `[I, have, socks.]`. This is not the only way to tokenize, as we'll see later. this could lead to differences in bleu score calculation across papers. 
+- Implicit in the bleu score calculation is that the text has been tokenized. For example, `I have socks.` is tokenized as `[I, have, socks.]`. This is not the only way to tokenize, as we'll see later. This could lead to differences in bleu score calculation across papers. 
 
-It does not take into consideration semantics. Let's say the reference translation is `I have a hamburger in my bag`. Candidate translation 1 is `I have a sandwhich in my bag`, and candidate translation 2 is `I have a dolphin in my bag.` They would both have the same bleu score, while we can see that candidate 2 is nonsense while candidate 1 is close.
+- It does not take into consideration semantics. Let's say the reference translation is `I have a hamburger in my bag`. Candidate translation 1 is `I have a sandwhich in my bag`, and candidate translation 2 is `I have a dolphin in my bag.` They would both have the same bleu score, while we can see that candidate 2 is nonsense while candidate 1 is close.
 
-It was designed for English translations. Translations in other languages may not have the same "similar n-gram matches correlates with human-judgement of translation quality" property.
+- It was designed for English translations. Translations in other languages may not have the same "similar n-gram matches correlates with human-judgement of translation quality" property.
 
-If one of the n-gram matches is 0, the bleu score is undefined since $$log(0)$$ is undefined. It is usually set to 0 in this case. For example, the translation `I have socks.` with reference `I have socks in my dresser.` would have a bleu score of 0 since the $$4$$-gram has precision of 0. This is not a good property since it is clearly a close translation. This can be fixed by adding 1 to all n-gram precisions, but it's not clear whether papers use this approach. 
+- If one of the n-gram matches is 0, the bleu score is undefined since $$log(0)$$ is undefined. It is usually set to 0 in this case. For example, the translation `I have socks.` with reference `I have socks in my dresser.` would have a bleu score of 0 since the $$4$$-gram has precision of 0. This is not a good property since it is clearly a close translation. This can be fixed by adding 1 to all n-gram precisions, but it's not clear whether papers use this approach. 
 
 See [this page](https://huggingface.co/spaces/evaluate-metric/bleu) for more discussion of limitations.
 
@@ -700,11 +703,11 @@ Regardless, bleu score is the standard for evaluating machine translations in an
 
 ## Experiments and results
 
-Now I'll actually implement both the RNN encoder-decoder model from {% cite 10.5555/2969033.2969173 %} and the RNN encoder-decoder model with attention from {% cite DBLP:journals/corr/BahdanauCB14 %}, evaluate it on the French to English translation task of the {% cite bojar-etal-2014-findings %} dataset, and compare results to the papers.
+Now I'll actually implement both the RNN encoder-decoder model from {% cite 10.5555/2969033.2969173 %} and the RNN encoder-decoder model with attention from {% cite DBLP:journals/corr/BahdanauCB14 %}, evaluate it on the French to English translation task of the {% cite bojar-etal-2014-findings %} (WMT'14) dataset, and compare results to the papers.
 
 ### Dataset
 
-In {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %}, they use the {% cite bojar-etal-2014-findings %} (Workshop on Machine Translation) English-French parallel corpora dataset which contains the following:
+In {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %}, they use the {% cite bojar-etal-2014-findings %} (Workshop on Machine Translation a.k.a WMT'14) English-French parallel corpora dataset which contains the following:
 
 - Europarl
     - Professional translations of European parliment
@@ -762,26 +765,38 @@ For comparison, {% cite 10.5555/2969033.2969173 %} used bidirectional LSTM inste
 
 Results are reported on the WMT'14 test set which contained 3003 english-french pairs.
 
-| Model | Average BLEU score |
-| :------ |:--- |
-|With attention | 0.297|
-| Without attention | 0.261 |
+| Model                                                                   | Average BLEU score |
+|:------------------------------------------------------------------------|:-------------------|
+| With attention                                                          | 0.297              |
+| Without attention                                                       | 0.261              |
+| {% cite 10.5555/2969033.2969173 %} (Single reversed LSTM, beam size 12) | 0.306              |
+| {% cite DBLP:journals/corr/BahdanauCB14 %} (RNNsearch-50*, All words)   | 0.285              |
 
+The model with attention achieved an overall higher average BLEU score than the model without attention.
+The model with attention achieved a better performance than {% cite DBLP:journals/corr/BahdanauCB14 %} (RNNsearch-50*, All words), 
+while the model without attention achieved worse performance than {% cite 10.5555/2969033.2969173 %} (Single reversed LSTM, beam size 12).
+
+Note that the model with attention, {% cite DBLP:journals/corr/BahdanauCB14 %} (RNNsearch-50*, All words), has a worse reported BLEU score than 
+{% cite 10.5555/2969033.2969173 %} (Single reversed LSTM, beam size 12).
 
 <figure style="text-align: center;">
-  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_vs_no_attention_bleu.png">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_vs_no_attention_bleu.png" id="figure10">
   <figcaption style="font-style: italic; color: gray;">Figure 10: Number of input tokens vs BLEU score for the model using attention and the model without attention on the WMT'14 test set.
 Both models showed increase in BLEU score as the number of input tokens increased. The scatter points are the actual BLEU score for each example, while the lines are lines of best fit to the data.
-Note that this figure agrees with {% cite 10.5555/2969033.2969173 %} but disagrees with {% cite DBLP:journals/corr/BahdanauCB14 %}.</figcaption>
+Note that this figure agrees with {% cite 10.5555/2969033.2969173 %} 
+but disagrees with {% cite DBLP:journals/corr/BahdanauCB14 %} since the latter reports 
+a decrease in performance in non-attention model with an increase in number of tokens, whereas we don't see this trend.
+</figcaption>
 </figure>
 
-While the model with attention has better overall performance than the model without, we are not able to reproduce a decrease in performance as the number of input tokens increases. {% cite 10.5555/2969033.2969173 %} also showed that their model without attention is robust to an increase in sentence length even without attention. 
+We are not able to reproduce a decrease in performance as the number of input tokens increases as {% cite DBLP:journals/corr/BahdanauCB14 %} and others showed. {% cite 10.5555/2969033.2969173 %} showed that their model without attention is robust to an increase in sentence length even without attention, which is the same trend we were able to reproduce.
 
 ### Random examples
 
 Let's look at a few randomly chosen translations from the test set.
 
 
+#### example 1
 | Input | With attention Prediction | Without attention Prediction | Target
 |:--- | :--- | :--- |:--- |
 |California planners are looking to the system as they devise strategies to meet the goals laid out in the state's ambitious global warming laws.|Les planificateurs de la Californie se tournent vers le système lorsqu'ils élaborent des stratégies pour atteindre les objectifs énoncés dans les lois ambitieuses de l'État sur le réchauffement planétaire.|Les planificateurs californiens se tournent vers le système pour mettre au point des stratégies visant à atteindre les objectifs énoncés dans la législation ambitieuse du réchauffement de la planète.|Les planificateurs de Californie s'intéressent au système puisqu'ils élaborent des stratégies pour atteindre les objectifs fixés dans les lois ambitieuses de l'État sur le réchauffement climatique.
@@ -798,6 +813,7 @@ While I don't speak French, plugging in both predictions into Google Translate p
 
 Both are close, but the translation with attention is better as it produces <ins>the goals</ins> rather than <ins>goals</ins> and also the translation without attention misses the important phrase <ins>the state's</ins>. Also the word *legislation* is awkward and *laws* is better.
 
+#### example 2
 | Input | With attention Prediction | Without attention Prediction | Target
 |:--- | :--- | :--- |:--- |
 |"Despite losing in its attempt to acquire the patents-in-suit at auction, Google has infringed and continues to infringe," the lawsuit said.|"Malgré la perte dans sa tentative d'acquérir les brevets en cours d'enchère, Google a enfreint et continue de violer", a déclaré la poursuite.|"En dépit de sa perte dans l'acquisition des brevets en cours aux enchères, Google a enfreint et continue de violer", a-t-il poursuivi.|« Bien qu'ayant échoué dans sa tentative d'acquérir les brevets en cause au cours des enchères, Google a violé et continue à violer lesdits brevets », ont indiqué les conclusions du procès.
@@ -812,6 +828,7 @@ Both are close, but the translation with attention is better as it produces <ins
 
 We see a similar pattern as before. The model with attention pretty much gets it right, while the model without attention adds the word <ins>pending</ins> to *patent auction* which is incorrect, and ends with <ins>he continued</ins> which is incorrect and should be *the lawsuit said*. 
 
+#### example 3
 | Input | With attention Prediction | Without attention Prediction | Target
 |:--- | :--- | :--- |:--- |
 |He also said that a woman and child had been killed in fighting the previous evening and had been buried.|Il a également déclaré qu'une femme et un enfant avaient été tués dans les combats de la soirée précédente et avaient été enterrés.|Il a également déclaré qu'une femme et un enfant avaient été tués au cours de la nuit précédente et avaient été enterrés.|Selon lui, une femme et son enfant ont été tués par les combats de la veille et ont été enterrées.
@@ -838,28 +855,9 @@ Interesting, it looks like the model is having trouble because there are multipl
 
 This is a failure mode that would definitely need to be worked on, possibly by splitting on period and translating each sentence separately.
 
-### Impact of beam search
-
-Later, in the section [sequence generation](#sequence-generation) I'll describe different sequence generation methods including Beam search and greedy sequence generation. The above results are using beam search using a beam width of 10. Briefly, greedy will choose the token with highest probability at each decoding step, while beam search will keep all partial sequences and will maintain a list of top performing "beams" which can replaced if a more likely sequence is found at any iteration of beam search. Greedy has the downside that it might choose a token that is locally optimal but which produces a suboptimal sequence but has the upside that it is significantly faster than beam search. I'll describe what this means in more detail in the later section.
-
-I'll compare greedy vs. beam search results
-
-| Sequence generation method | Average Bleu score |
-| :------ |:--- |
-|Greedy | 0.372|
-| Beam search with $$beam width = 10$$ | 0.387 |
-
-So beam search slightly improves overall performance, but at the cost of taking significantly longer to run.
-
-We can see from the figure below that beam search in general improves performance compared to greedy, but also produces an translation of equivalent quality to greedy more generally and sometimes worse.
-
-<figure style="text-align: center;">
-  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/beam_search_diff.png">
-  <figcaption style="font-style: italic; color: gray;">Figure 11: Impact of beam search on BLEU score. 
-The histogram shows slight overall improvement in BLEU score when beam search is used.</figcaption>
-</figure>
-
 ## Implementation details
+
+I'll now go through the nitty-gritty of some of the implementaton details.
 
 ### <a name="tokenization"></a>Tokenization
 
@@ -940,7 +938,7 @@ When training we construct minibatches to parallelize the computation. We must p
 
 Let's say we had this minibatch:
 <figure style="text-align: center;">
-  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/padding.png">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/padding.png" style="width: 80%">
   <figcaption style="font-style: italic; color: gray;">Figure 12: Example minibatch with padding</figcaption>
 </figure>
 
@@ -948,7 +946,7 @@ The 3 padding tokens in the 1st sequence are required because the 1st sequence i
 
 #### the issue
 
- What I encountered is that when I passed the 1st sequence as is with the 3 padding tokens through the encoder-decoder, the output translation was, let's say "J'ai des chaussettes." But when I removed the padding tokens, and just passed the sequence by itself without padding tokens, I got a totally different translation.
+ What I encountered is that when I passed the 1st sequence as is with the 3 padding tokens through the encoder-decoder, the output translation was one thing. But when I removed the padding tokens, and just passed the sequence by itself without padding tokens, I got a totally different translation.
 
  This to me was a bad sign. The model should not be sensitive to the padding tokens; they should be ignored. Their only purpose should be to make the sequences in the minibatch the same length and shouldn't have any meaning.
 
@@ -956,7 +954,6 @@ The 3 padding tokens in the 1st sequence are required because the 1st sequence i
 
  Padding affects the model in a few ways.
 
-##### encoding
  The 1st way is when we encode the input sequences in the minibatch, the RNN must iterate through each token in the sequence, including the pad tokens. We would like for the encoder to learn that the pad tokens are irrelevent, which is what I thought would happen with enough data. But clearly this was not the case. How can we force the encoder to ignore the pad tokens?
 
  It turns out in pytorch there is function to force RNNs to ignore the pad tokens. 
@@ -972,9 +969,7 @@ packed_embedded = torch.nn.utils.rnn.pack_padded_sequence(
 
  Given the tensor with the pad tokens, and the lengths of each sequence in the tensor, `torch.nn.utils.rnn.pack_padded_sequence` will construct a `PackedSequence` object which any RNN module in pytorch knows how to take as input. The RNN will know to ignore the pad tokens.
 
- ##### loss function
-
-In the cross-entropy loss we are comparing the predicted token with the actual token for a minibatch of predicted and actual sequences, e.g.
+The 2nd way is the loss function. In the cross-entropy loss we are comparing the predicted token with the actual token for a minibatch of predicted and actual sequences, e.g.
 
 ```python
 loss = criterion(
@@ -985,8 +980,7 @@ loss = criterion(
 
 What happens if the sequences are padded with a bunch of pad tokens? If we evaluate the loss where a significant number of `decoder_outputs` are pad tokens and `target_tensor` are pad tokens, then the loss will be biased towards the pad tokens. We want the loss to reflect the actual tokens, and not the pad tokens. It turns out that `CrossEntropyLoss` supports `ignore_index` which will ignore a specific index in the loss calculation; in this case it should be set to the `<pad>` token.
 
-##### attention
-The other place where the pad token needs to be ignored is when calculating the attention weights. We don't want the model to pay attention to the pad token.
+The 3rd way is the attention mechanism when calculating the attention weights. We don't want the model to pay attention to the pad token.
 
 If we look again at the equation for attention:
 
@@ -1009,58 +1003,11 @@ Hopefully all this effort to ignore the pad token works and the model is insensi
 
 In the following example we randomly sample a test example, check the output with no padding and compare it with the output with a randomly chosen number of pad tokens appended.
 
-```python
-def check_padding():
-	encoder, decoder = construct_model_attention()
-	for i in range(5):
-		num_pad_tokens = torch.randint(size=(1, 1), low=0, high=50)[0].item()
-		dset_idx = torch.randint(size=(1, 1), low=0, high=len(test_dset))[0].item()
-		
-		input = test_dset[dset_idx][0]
-		input_with_pad_tokens = torch.cat([input, (torch.ones(num_pad_tokens) * source_tokenizer.processor.pad_id()).long()])
-		
-		print(f'input: {source_tokenizer.decode(input)}')
-		
-		_, _, _, decoded_ids_no_padding = inference(
-			encoder=encoder,
-			decoder=decoder,
-			input_tensor=input.unsqueeze(0),
-			input_lengths=[len(input)]
-		)
-		
-		_, _, _, decoded_ids_padding = inference(
-			encoder=encoder,
-			decoder=decoder,
-			input_tensor=input_with_pad_tokens.unsqueeze(0),
-			input_lengths=[len(input_with_pad_tokens)]
-		)
-		
-		print(f'output with no pad tokens appended to input == output with {num_pad_tokens} pad tokens appended to input', (decoded_ids_padding == decoded_ids_padding).all().item())
-		
-		print('='*11)
-		
-		
-```
-```python
-check_padding()
-```
-```
-input: In a police interview he said he ran an office at his home address as well as work place and clients would call at his house on legal business.
-output with no pad tokens appended to input == output with 1 pad tokens appended to input True
-===========
-input: A US official confirmed that there had been an "Israeli strike", but did not give details of the target.
-output with no pad tokens appended to input == output with 33 pad tokens appended to input True
-===========
-input: As a result, the seatbacks fail to comply with federal auto safety standards on head restraints.
-output with no pad tokens appended to input == output with 9 pad tokens appended to input True
-===========
-input: Amid the uproar, Murphy said his office is arranging the congressional trip, expected to take place this year, and hopes the delegation will include members of both parties and both chambers.
-output with no pad tokens appended to input == output with 18 pad tokens appended to input True
-===========
-input: There is debate about what constitutes the actual onset of puberty, but it is considered "precocious" when breast enlargement is accompanied by a growth spurt before age 8.
-output with no pad tokens appended to input == output with 44 pad tokens appended to input True
-===========
-```
+{::nomarkdown}
+{% assign jupyter_path = 'assets/jupyter/2024-10-03-sequence_to_sequence_translation/padding.ipynb' | relative_url %}
+{% jupyter_notebook jupyter_path %}
+{:/nomarkdown}
+
 
 Great, the model seems to be ignoring the pad tokens!
 
@@ -1087,6 +1034,20 @@ At each timestep $$t$$, beam search will choose the $$B$$ most likely next token
 - The $$log-likelihood$$ of the sequence
 
 We start by choosing $$B$$ most likely tokens to start the sequence. Then for each of these sequences, we select the $$B$$ most likely next tokens, producing $$B^2$$ possible sequences. From this list of possible sequences, we choose the $$B$$ most promising by comparing the $$log-likelihood$$ of each sequence and choosing the $$B$$ sequences with the lowest $$log-likelihood$$. We complete the search once all $$B$$ beams terminate with an `end of sentence` token or when we've done a certain number of iterations of search, whichever comes first.
+
+### Impact of beam search
+
+The above results shown [figure 10](#figure10) are using beam search using a beam width of 10.
+
+I'll compare greedy vs. beam search results
+
+We can see from the figure below that beam search in general improves performance compared to greedy, but also produces an translation of equivalent quality to greedy more generally and sometimes worse. Beam search also takes significantly longer to run.
+
+<figure style="text-align: center;">
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/beam_search_diff.png">
+  <figcaption style="font-style: italic; color: gray;">Figure 11: Impact of beam search on BLEU score. 
+The histogram shows slight overall improvement in BLEU score when beam search is used.</figcaption>
+</figure>
 
 ##### beam search example
 
