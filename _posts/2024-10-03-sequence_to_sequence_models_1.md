@@ -895,7 +895,7 @@ Then, the most common pairs of bytes are merged. These merges get added to the v
 
 This continues until the vocabulary gets to a certain size, which is a hyperparameter.
 
-Note that this solves the problems mentioned above. We are using a byte-level representation, but for common sequences of bytes, such as common words, we are representing those as a single token. For uncommon characters, or characters not even in the training set, those are left as individual bytes.
+Note that this solves the problems mentioned above. We are using a byte-level representation, but for common sequences of bytes, such as common words, we are representing those as a single token. For characters not in the training set, those are left as individual bytes, which can be achieved by using `byte_fallback=True` in the `sentencepiece` algorithm.
 
 {: .box-note}
 **Side note:** The BPE algorithm was originally developed as a [compression algorithm](https://web.archive.org/web/20160326130908/http://www.csse.monash.edu.au/cluster/RJK/Compress/problem.html) in 1994. 
@@ -1025,23 +1025,22 @@ However, it turns out that this can produce suboptimal, awkwardly phrased, or st
 
 #### beam search
 
-A solution to this is to use "beam search". {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %} both use beam search to produce the output sequences. At first I skipped over this detail as I thought it might have been a relic of the past, but it turns out to be an important detail.
+A solution to this is to use "beam search". {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %} both use beam search to produce the output sequences.
 
 At each timestep $$t$$, beam search will choose the $$B$$ most likely next tokens, as well as store the following things:
 
 - the decoder hidden state at timestep $$t$$
 - the generated sequence at timestep $$t$$
-- The $$log-likelihood$$ of the sequence
+- The _log-likelihood_ of the sequence
 
-We start by choosing $$B$$ most likely tokens to start the sequence. Then for each of these sequences, we select the $$B$$ most likely next tokens, producing $$B^2$$ possible sequences. From this list of possible sequences, we choose the $$B$$ most promising by comparing the $$log-likelihood$$ of each sequence and choosing the $$B$$ sequences with the lowest $$log-likelihood$$. We complete the search once all $$B$$ beams terminate with an `end of sentence` token or when we've done a certain number of iterations of search, whichever comes first.
+We start by choosing $$B$$ most likely tokens to start the sequence. Then for each of these sequences, we select the $$B$$ most likely next tokens, producing $$B^2$$ possible sequences. 
+From this list of possible sequences, we choose the $$B$$ most promising by comparing the _log-likelihood_ of each sequence and choosing the $$B$$ sequences with the highest _log-likelihood_. We complete the search once all $$B$$ beams terminate with an `end of sentence` token or when we've done a certain number of iterations of search, whichever comes first.
 
 ### Impact of beam search
 
 The above results shown [figure 10](#figure10) are using beam search using a beam width of 10.
 
-I'll compare greedy vs. beam search results
-
-We can see from the figure below that beam search in general improves performance compared to greedy, but also produces an translation of equivalent quality to greedy more generally and sometimes worse. Beam search also takes significantly longer to run.
+We can see from the figure below that beam search in general improves performance compared to greedy, but also produces a translation of equivalent quality to greedy more generally and sometimes worse. Beam search also takes significantly longer to run.
 
 <figure style="text-align: center;">
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/beam_search_diff.png">
@@ -1065,16 +1064,16 @@ The greedy search prediction is:
 
 Let's see what beam search produces.
 
-For this example I am using a $$beam-size$$ $$B$$ of $$2$$.
+For this example I am using a _beam-size_ $$B$$ of $$2$$.
 
 Beam search starts off predicting the 1st token:
 
 **iteration 1**
 
-| Sequence | $$log-likelihood$$ |
-| :------ |:--- |
-| | 0.0 |
-| ' | -19.966 |
+| Sequence | _log-likelihood_ |
+| :------ |:---------------|
+| | 0.0            |
+| ' | -19.966        |
 
 It starts off predicting start of sentence and an apostrophe token.
 
@@ -1082,63 +1081,68 @@ Then, for each of these beams, it predicts $$B$$ next tokens:
 
 **iteration 2**
 
-| Sequence | $$log-likelihood$$ |
-| :------ |:--- |
-|Le | -0.387|
-| La | -3.325 |
-| ' Le | -20.716 |
-| ' La | -22.956 |
+| Sequence | _log-likelihood_ |
+| :------ |:---------------|
+|Le | **-0.387**         |
+| La | **-3.325**         |
+| ' Le | -20.716        |
+| ' La | -22.956        |
 
 For each of the previous 2 beams, we search for the next token. *Le* is the most likely, while *La* is second most likely. We select these 2 beams and continue expanding both.
 
 **iteration 3**
-| Sequence | $$log-likelihood$$ |
+
+| Sequence | _log-likelihood_ |
 | :------ |:--- |
-|Le directeur| -0.560|
+|Le directeur| **-0.560**|
 | Le chef | -4.279 |
-| La directrice | -3.885 |
+| La directrice | **-3.885** |
 | La direction| -5.589 |
 
 Let's see what happens next.
 
 **iteration 4**
-| Sequence | $$log-likelihood$$ |
-| :------ |:--- |
-|Le directeur du| -1.102|
-| Le directeur de | -1.667 |
-| La directrice du | -4.574 |
-| La directrice de| -5.007 |
+
+| Sequence | _log-likelihood_ |
+| :------ |:---------------|
+|Le directeur du| **-1.102**         |
+| Le directeur de | **-1.667**         |
+| La directrice du | -4.574         |
+| La directrice de| -5.007         |
 
 **iteration 5**
-| Sequence | $$log-likelihood$$ |
-| :------ |:--- |
-|Le directeur du théâtre| -1.267|
-| Le directeur du secteur| -5.419 |
-| Le directeur de théâtre |-2.450 |
-| Le directeur de la| -2.565 |
+
+| Sequence | _log-likelihood_ |
+| :------ |:---------------|
+|Le directeur du théâtre| **-1.267**         |
+| Le directeur du secteur| -5.419         |
+| Le directeur de théâtre | **-2.450**         |
+| Le directeur de la| -2.565         |
 
 We can see how beam search is trying out different possibilities for the next token and 
 adjustment the likelihood after expanding each of the most likely $$B$$ beams $$B$$ times.
 
 It continues like this for 28 iterations. The final list of beam candidates are:
 
-| Sequence | $$log-likelihood$$ |
-| :------ |:--- |
-|Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie pour vérifier une odeur suspecte.| -12.367|
-| Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie pour vérifier une odeur suspecte de| -19.076 |
-| Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie à vérifier une odeur suspecte. | -12.813|
-| Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie à vérifier une odeur suspecte de | -12.813 |
+| Sequence | _log-likelihood_ |
+| :------ |:---------------|
+|Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie pour vérifier une odeur suspecte.| **-12.367**        |
+| Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie pour vérifier une odeur suspecte de| -19.076        |
+| Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie à vérifier une odeur suspecte. | **-12.813**        |
+| Le directeur du théâtre a immédiatement entrepris une procédure d'évacuation et a appelé la brigade d'incendie à vérifier une odeur suspecte de | -12.813        |
 
 We can see that 2 of the sequences are incomplete, but because $$B=2$$ of the sequences are complete, beam search terminates. This is a  bias of beam search that it prefers shorter sequences.
 
 
 ### Handling unknown tokens
 
-In previous attempts at language modeling, a fixed size vocabulary would be constructed and used for training. What happens when the model sees an unknown token at test time? What should the model do? The model was typically just output a special `<UNK>` token, standing for unknown. But this is not useful. We don't want to see that. When using chatgpt for example, we don't want to see `<UNK>` in the output, but what if a user enters something it has never seen before?
+In previous attempts at language modeling, a fixed size vocabulary would be constructed and used for training. 
+What happens when the model sees an unknown token at test time? What should the model do? 
+The model would typically just output a special `<UNK>` token, standing for unknown. But this is not useful. We don't want to see that. When using chatgpt for example, we don't want to see `<UNK>` in the output, but what if a user enters something it has never seen before?
 
 We mentioned before in the section on [tokenization](#tokenization) that the initial vocabulary when using the `sentencepiece` algorithm with `byte_fallback=True` is that the initial vocabulary contains all UTF-8 bytes. When an unexpected token is encountered in this scenario, the sentencepiece algorithm will break down the token into its UTF-8 bytes, and since each UTF-8 byte is part of the vocabulary, the model will not need to output the `<UNK>` token.
 
-When we use the byte-pair encoding algorithm, we break up the sequence into familiar chunks, if familiar chunks exist. We can this for the word *suspecte* which means *suspicious*. It breaks up this word into 2 tokens, since the word *suspecte* by itself wasn't common enough in the tokenizer training set.
+When we use the byte-pair encoding algorithm, we break up the sequence into familiar chunks, if familiar chunks exist. We can do this for the word *suspecte* which means *suspicious*. It breaks up this word into 2 tokens, since the word *suspecte* by itself wasn't common enough in the tokenizer training set.
 
 In code:
 
@@ -1180,9 +1184,9 @@ However, this shows that we can output something rather than `<UNK>`.
 
 ## Conclusion
 
-We implemented an RNN model without attention similar to {% cite 10.5555/2969033.2969173 %} and a model with attention similar to {% cite DBLP:journals/corr/BahdanauCB14 %} and found that the model with attention has better overall performance than the model without attention as evaluated by the BLEU score. However, {% cite DBLP:journals/corr/BahdanauCB14 %} reports a steep decrease in BLEU score as the sentence length increases, which we were not able to reproduce. Our results are in line with {% cite 10.5555/2969033.2969173 %} which reported that the model without attention is robust to sentence length, but the paper that introduced attention is the very famous paper while the model without attention that reported robustness to sentence length is not nearly as cited. 
+We implemented an RNN model without attention similar to {% cite 10.5555/2969033.2969173 %} and a model with attention similar to {% cite DBLP:journals/corr/BahdanauCB14 %} and found that the model with attention has better overall performance than the model without attention as evaluated by the BLEU score. However, {% cite DBLP:journals/corr/BahdanauCB14 %} reports a steep decrease in BLEU score as the sentence length increases, which we were not able to reproduce. Our results are in line with {% cite 10.5555/2969033.2969173 %} which reported that the model without attention is robust to sentence length, but the paper that introduced attention is seen as a "paradigm shift" paper that introduced attention, so the community saw value in the attention mechanism though the reported performance in the paper is not as good as previous papers.
 
-Attention forms the backbone of SOTA "language models" such as the GPT series, and as such became much more influential.
+Researchers ran with the idea of attention, and developed the transformer architecture, which forms the backbone of SOTA "language models" such as the GPT series.
 
 Also of note that at the time, non-deep-learning based methods such as Moses, showed better performance on the translation task, but clearly the community invested more effort in deep learning based methods. The transformer model paid off and is significantly more influential than just in doing translation, which Moses is only capable of doing.
 
