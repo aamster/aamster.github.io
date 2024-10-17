@@ -843,6 +843,42 @@ We see a similar pattern as before. The model with attention pretty much gets it
 
 The model with attention gets it right while the model without attention misses the important phrase <ins>in the fighting</ins> and adds the slightly awkward <ins>during</ins>.
 
+### Looking at attention weights
+
+Attention, as described above, give the decoder the ability to give different weights to different tokens in the input.
+We can inspect these weights to understand better which input tokens each decoding timestep is "paying attention to".
+
+<figure style="text-align: center;">
+    <div class="l-page">
+      <iframe src="{{ '/assets/plotly/2024-10-03-sequence_to_sequence_translation/attention_weights.html' | relative_url }}" height="500px" width="100%" style="border: 0px"></iframe>
+    </div>
+  <figcaption style="font-style: italic; color: gray;">
+    Figure 12: Attention weights for 4 randomly chosen examples in the WMT'14 test set with input lengths between 10 and 20 tokens.
+    The model output tokens are on the horizontal axis and the input tokens on the vertical.
+    The value of each cell indicates how strongly a given decoding timestep "paid attention to" a given input token.
+  </figcaption>
+</figure>
+
+Above is a figure showing 4 randomly chosen examples from the WMT'14 test set which have input lengths between 10 and 20 tokens.
+We can see that the attention weights are mostly linear.
+For example in the top left subplot we can see that at timestep $$1$$, the model most strongly pays attention to the english token _\_But_ to produce the french token _\_Mais_, 
+and at timestep $$2$$ the model most strongly pays attention to _\_why_ to produce the french token _\_porquois_.
+
+However there are deviations from this. For example in the bottom left subplot we can see that
+the english phrase _phone calls_ gets translated to the french _appels téléphoniques_, which literally
+translates to calls _phone_, and we can see that when outputting _appels_, the input token _calls_ 
+is most strongly paid attention to, while when outputting _téléphoniques_, _phone_ is most strongly paid attention to.
+
+Sometimes, we can see that a given token in the input is paid attention to by multiple timesteps in the decoder.
+For example, in the bottom right subplot we can see that the input _returned_ is paid attention to 
+by the phrase _les gens sont revenus_ or in english _the people returned_. So in addition to 
+the obvious token _returned_ the model is paying attention to the phrase it is used in.
+
+We can see another case where the model outputs multiple tokens which maps to a single input token.
+In the top left subplot the english _\_authority_ gets mapped to the output tokens, _\_l_, _'_, _\_autorité_ and 
+we can see that all 3 output tokens pay attention to the input _\_authority_.
+
+
 ### Failure mode examples
 
 It's useful to look at examples where the model performs poorly.
