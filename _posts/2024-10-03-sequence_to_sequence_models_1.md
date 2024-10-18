@@ -849,14 +849,27 @@ Attention, as described above, give the decoder the ability to give different we
 We can inspect these weights to understand better which input tokens each decoding timestep is "paying attention to".
 
 <figure style="text-align: center;">
-    <div class="l-page">
-      <iframe src="{{ '/assets/plotly/2024-10-03-sequence_to_sequence_translation/attention_weights.html' | relative_url }}" height="500px" width="100%" style="border: 0px"></iframe>
-    </div>
-  <figcaption style="font-style: italic; color: gray;">
-    Figure 12: Attention weights for 4 randomly chosen examples in the WMT'14 test set with input lengths between 10 and 20 tokens.
-    The model output tokens are on the horizontal axis and the input tokens on the vertical.
-    The value of each cell indicates how strongly a given decoding timestep "paid attention to" a given input token.
-  </figcaption>
+    <div id="attention_weights_plot_container" style="width: 100%; height: 1300px;"></div>
+    <script>
+        fetch("{{ '/assets/plotly/2024-10-03-sequence_to_sequence_translation/attention_weights.html' | relative_url }}")
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error('Failed to load plotly html');
+                }
+                return response.text();
+            })
+            .then(htmlContent => {
+                document.getElementById('attention_weights_plot_container').innerHTML = htmlContent;
+            })
+            .catch(error => {
+                console.error('Error loading Plotly HTML:', error);
+            });
+    </script>
+    <figcaption style="font-style: italic; color: gray;">
+        Figure 12: Attention weights for 4 randomly chosen examples in the WMT'14 test set with input lengths between 10 and 20 tokens.
+        The model output tokens are on the horizontal axis and the input tokens on the vertical.
+        The value of each cell indicates how strongly a given decoding timestep "paid attention to" a given input token.
+    </figcaption>
 </figure>
 
 Above is a figure showing 4 randomly chosen examples from the WMT'14 test set which have input lengths between 10 and 20 tokens.
