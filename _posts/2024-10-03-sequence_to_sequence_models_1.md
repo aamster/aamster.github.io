@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Sequence to sequence translation (part 1)
-tags: ["deep learning", "rnn", "machine translation", "sequences"]
+title: Translation using deep neural networks (part 1)
+tags: ["deep learning", "rnn", "machine translation", "sequences", "attention"]
 scholar:
     bibliography: 2024-10-03-sequence_to_sequence_translation.bib
 toc:
@@ -13,7 +13,13 @@ In this article, I'll introduce language modeling using deep learning and will f
 
 I'll cover how language was modeled using deep learning prior to transformers, which was by using recurrent neural networks (RNNs).
 
-I'll compare  {% cite DBLP:journals/corr/BahdanauCB14 %} which introduces the idea of attention in RNNs, with a paper published around the same time {% cite 10.5555/2969033.2969173 %} which does not use attention. I'll explain in detail what attention is and why it was introduced, as well as try to reproduce the results from these papers. The results from these papers are actually contradictory; {% cite 10.5555/2969033.2969173 %} reported better performance than {% cite DBLP:journals/corr/BahdanauCB14 %}, however the latter is well known and influential for introducing attention. This is surprising to me, and shows that researchers found the idea of attention to be useful regardless of the performance reported in these papers. 
+I'll compare  {% cite DBLP:journals/corr/BahdanauCB14 %} which introduces the idea of _attention_ in RNNs, with a paper published around the same time {% cite 10.5555/2969033.2969173 %} which does not use attention. I'll explain in detail what attention is and why it was introduced, as well as try to reproduce the results from these papers. The results from these papers are actually contradictory; {% cite 10.5555/2969033.2969173 %} reported better performance than {% cite DBLP:journals/corr/BahdanauCB14 %}, however the latter is well known and influential for introducing attention. This is surprising to me, and shows that researchers found the idea of attention to be useful regardless of the performance reported in these papers. 
+
+In the section [Sequence to sequence models](#sequence-to-sequence-models), I'll give background on how to model problems where we take a sequence as input and output a sequence, with special attention (no pun intended) to the problem of translation.
+In [Experiments and results](#experiments-and-results) I'll reproduce {% cite 10.5555/2969033.2969173 %} and {% cite DBLP:journals/corr/BahdanauCB14 %}.
+And in [Implementation details](#implementation-details) I'll cover technical details about how the models were implemented.
+
+All code for this article is available [here](https://github.com/aamster/seq2seq-translation).
 
 In the next article I'll cover how language is modeled today using transformers. 
 
@@ -43,7 +49,9 @@ The models used for language modeling are also general purpose models that can h
 
 ### What is a language model?
 
-Simply put a language model is a model that has learned to predict the next token given the previous tokens. The token is usually a word/subword/single character.
+Simply put a language model is a model that has learned to predict the next **token** given the previous **tokens**. 
+The token is usually a word/subword/single character, but can be any discrete chunk of 
+data that is part of a fixed vocabulary.
 
 ### What is a large language model?
 
@@ -108,29 +116,54 @@ In fact, early models would do better at shorter sentences than longer ones beca
 the neural machine translation model degrades
 quickly as the length of a source sentence increases. 
 
-<figure style="text-align: center;" id="ChoBleuVsSentLen">
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/rnn_enc_decreasing_perf_sent_len.png" alt="bleu vs sentence len">
-  <figcaption style="font-style: italic; color: gray;">Figure 1: Figure from {% cite cho-etal-2014-properties %}. Exponential dropoff in BLEU score (measure of translation quality) of deep neural network model as input/target length increases</figcaption>
-</figure>
+{% endcapture %}
+
+{% capture figure_caption %}
+Figure from {% cite cho-etal-2014-properties %}. Exponential dropoff in BLEU score (measure of translation quality) of deep neural network model as input/target length increases.
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+    id="ChoBleuVsSentLen"
+%}
+
 
 However, {% cite 10.5555/2969033.2969173 %} states 
 > We were surprised to discover that the LSTM did well on long sentences
 
 
-<figure style="text-align: center;">
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/sutskever_sent_len.png" alt="Sutskever bleu vs sentence len">
-  <figcaption style="font-style: italic; color: gray;">Figure 2: Figure from {% cite 10.5555/2969033.2969173 %}. LSTM (recurrent neural network model) performed well even on the longest inputs.</figcaption>
-</figure>
+{% endcapture %}
+
+{% capture figure_caption %}
+Figure from {% cite 10.5555/2969033.2969173 %}. LSTM (recurrent neural network model) performed well even on the longest inputs.{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
 
 And then again in the seminal paper {% cite DBLP:journals/corr/BahdanauCB14 %}, 
 which I'll discuss in more detail later shows the same problem, that the model struggles with longer sentences:
 
-
-<figure style="text-align: center;" id="figure3">
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/bhadanau_perf.png" alt="Bhadanau perf">
-  <figcaption style="font-style: italic; color: gray;">Figure 3: Figure from {% cite DBLP:journals/corr/BahdanauCB14 %}. 
-LSTM models without attention show exponential dropoff in BLEU score (translation quality) while the model with attention is stable across input lengths.</figcaption>
-</figure>
+{% endcapture %}
+
+{% capture figure_caption %}
+Figure from {% cite DBLP:journals/corr/BahdanauCB14 %}. 
+LSTM models without attention show exponential dropoff in BLEU score (translation quality) while the model with attention is stable across input lengths.
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+    id="figure3"
+%}
 
 Notice how the performance (BLEU score, I'll discuss in more detail in the section [Measuring performance of translation tasks: BLEU score](#measuring-performance-of-translation-tasks-bleu-score)) degrades rapidly
 as the sentence length increases in the RNNenc-50 and RNNenc-30 models.
@@ -252,16 +285,25 @@ as you can see $$W_{hh}$$ is multiplied with $$h_t$$, $$W_{xh}$$ is multiplied w
 
 The resulting vector is then passed through the a function $$tanh$$ which is just a function that maps $$(-\infty, +\infty) \to (-1, 1)$$. It looks like this:
 
-<figure style="text-align: center;">
+
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/Hyperbolic_Tangent.svg">
-  <figcaption style="font-style: italic; color: gray;">Figure 4: tanh</figcaption>
-</figure>
+{% endcapture %}
+
+{% capture figure_caption %}
+tanh
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
 
 that means that the hidden state is a vector $$h_t \in \mathbb{R}^h$$ where each element is between $$(-1, 1$$)
 
 #### example
 
-Let's look at a simple example using the sentence "I have socks." as input.
+Let's look at a simple example using the sentence "I have socks." as input, and pass it through the vanilla RNN.
 
 Let's tokenize the sentence as ["I", "have", "socks", "."]
 
@@ -282,13 +324,23 @@ First we split up the sequence "I have socks." into tokens "I", "have", "socks",
 Then we mapped each token to a unique number using the variable `vocab` to map between token and number.
 
 For each token id we looked up an embedding vector. The embedding vector is a fixed length numeric vector and is a way to map each token to a vector of numbers, since the neural network can only take numeric values as input.
+It starts out randomly initialized and is learned during training.
 
 Mapping the sequence of tokens into a sequence of vectors gives us:
 
-<figure style="text-align: center;">
-  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/embedding.png">
-  <figcaption style="font-style: italic; color: gray;">Figure 5: Mapping tokens to numeric vectors (embeddings)</figcaption>
-</figure>
+
+{% capture figure_content %}
+  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/embedding.png" style="width: 50%">
+{% endcapture %}
+
+{% capture figure_caption %}
+Mapping tokens to numeric vectors (embeddings)
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
 
 We initialized the hidden state
 $$
@@ -365,7 +417,7 @@ $$
 o = \begin{bmatrix}-0.3126 &  0.5246 &  0.6447\\0.0277 &  0.3934 &  0.8409\\-0.8055 & -0.0275 &  0.0972\\-0.2049 &  0.3322 &  0.3161\end{bmatrix}
 $$
 
-What do these numbers represent? The final hidden state $$h_4$$ represents the RNN's compressed/useful representation of the sequence. The outputs $$o_t$$ represent the compressed/useful representation after processing token $$t$$ and having processed the previous $$t-1$$ tokens.
+What do these numbers represent? The final hidden state $$h_4$$ represents the RNN's compressed/useful representation of the input sequence _I have socks._. The outputs $$o_t$$ represent the compressed/useful representation after processing token $$t$$ and having processed the previous $$t-1$$ tokens.
 
 The hidden state is reset to $$0$$ each time it processes a new sequence.
 
@@ -447,12 +499,21 @@ sequence given a source sequence.
 
 Here is a picture of what that would look like for the sequence "I have socks." -> יש לי גרביים 
 
-<figure style="text-align: center;" id="figure6">
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/encoder_decoder.png">
-  <figcaption style="font-style: italic; color: gray;">Figure 6: Encoding/decoding "I have socks." -> יש לי גרביים</figcaption>
-</figure>
+{% endcapture %}
 
- You'll notice a few things from this picture of the encoder-decoder architecture for translation.
+{% capture figure_caption %}
+Encoding/decoding "I have socks." -> יש לי גרביים
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+    id="figure6"
+%}
+
+You'll notice a few things from this picture of the encoder-decoder architecture for translation.
 
  - The encoder and decoder look similar. They are both separate RNNs that are connected to each other and trained together. Each have separate hidden states.
  - The inputs to each timestep $$t$$ in the decoder are the <span style="color:rgb(245,66,213)">context vector</span> as well as the <span style="color:rgb(0,103,20)">previous token</span>.
@@ -541,19 +602,35 @@ The result of $$a(s_{i-1}, h_j)$$ will be $$\in \mathbb{R}^{t}$$ where $$t$$ is 
 It will look like:
 
 
-<figure style="text-align: center;">
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights.png" style="width: 50%">
-  <figcaption style="font-style: italic; color: gray;">Figure 7: attention weights</figcaption>
-</figure>
+{% endcapture %}
 
-We then map the numbers to a probability distribution using the $$softmax$$ function. The attention weights will then look like:
+{% capture figure_caption %}
+attention weights
+{% endcapture %}
 
-<figure style="text-align: center;">
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
+
+We then map the numbers to a probability distribution using the _softmax_ function. The attention weights will then look like:
+
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_weights_softmax.png" style="width: 50%">
-  <figcaption style="font-style: italic; color: gray;">Figure 8: attention weights passed through the softmax function</figcaption>
-</figure>
+{% endcapture %}
 
- This has the interpretation of "which tokens in the input are most important for outputting the current token in the decoder?"
+{% capture figure_caption %}
+attention weights passed through the softmax function
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
+
+This has the interpretation of "which tokens in the input are most important for outputting the current token in the decoder?"
 
  Note that we use a probability distribution rather than a hard cutoff when determining which tokens are important. Some tokens may be less important than others, but have some importance. 
 
@@ -585,7 +662,7 @@ This is then divided by $$\sqrt{d_k}$$, and hence the name "scaled" in "scaled d
 > We suspect that for large values of $$d_k$$, the dot products grow large in magnitude, pushing the softmax function into regions where it has
 extremely small gradients. To counteract this effect, we scale the dot products by $$\sqrt{d_k}$$.
 
-We then take the $$softmax$$, resulting in a probability for each timestep $$t$$. 
+We then take the _softmax_, resulting in a probability for each timestep $$t$$. 
 
 Finally, we multiply this by the matrix $$V$$. The resulting vector is of size $$d_v$$ and each element is a weighted sum of importances calculated from the attention weights in the previous step.
 
@@ -599,7 +676,7 @@ __Attention__ tries to fix this problem by figuring out what the most relevant b
 In the example long input that we made up above
 > I have socks that are thick and made of wool because it is cold outside; it is comfortable to wear around the house while I look outside at the white snow gently falling to the ground.
 
-when we are translating at the end the phrase "white snow", maybe "socks that are thick and made of wool" is less relevant than "outside" and "gently falling to the ground".
+when we are translating at the end the word "snow", maybe "socks that are thick and made of wool" is less relevant than "white" and "gently falling".
 
 In this way the attention mechanism allows us to pay attention to only the relevant parts of the input for each decoding step, and so we don't have to construct a single meaning of the entire input.
 
@@ -635,10 +712,18 @@ BLEU score is the standard metric used to evaluate translation models. It was pr
 See this interesting figure in the paper in which the authors found the bleu score to correlate with how bilingual humans rated the quality of a translation:
 
 
-<figure style="text-align: center;">
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/bleu_human_correlation.png">
-  <figcaption style="font-style: italic; color: gray;">Figure 9: Figure from {% cite 10.3115/1073083.1073135 %}. BLEU score correlates with bilingual judgement of translation quality.</figcaption>
-</figure>
+{% endcapture %}
+
+{% capture figure_caption %}
+Figure from {% cite 10.3115/1073083.1073135 %}. BLEU score correlates with bilingual judgement of translation quality.
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
 
 At a high level, the bleu score computes an average of precisions for $$n$$-grams up to a certain $$n$$.
 
@@ -654,7 +739,7 @@ Let's take a look at an example
 The bleu score for the prediction `I have socks.` when the reference translation is `In my dresser I have socks.` is $$0.47$$. The bleu score ranges between $$[0, 1]$$ and so a bleu score of $$0.47$$ is decent but not perfect.
 
 Let's break down the calculation further. We calculate `precision` scores for $$n$$-grams up to $$n$$, in this case 4.
-Precision is defined as $$TP\div{TP + FP}$$, in other words the number of $$n$$-grams that we predict in our translation that are correct.
+_Precision_ is defined as $$\frac{TP}{TP + FP}$$, in other words the number of $$n$$-grams that we predict in our translation that are correct.
 
 $$1$$-grams
 
@@ -703,7 +788,7 @@ Regardless, bleu score is the standard for evaluating machine translations in an
 
 ## Experiments and results
 
-Now I'll actually implement both the RNN encoder-decoder model from {% cite 10.5555/2969033.2969173 %} and the RNN encoder-decoder model with attention from {% cite DBLP:journals/corr/BahdanauCB14 %}, evaluate it on the French to English translation task of the {% cite bojar-etal-2014-findings %} (WMT'14) dataset, and compare results to the papers.
+Now I'll actually implement both the RNN encoder-decoder model from {% cite 10.5555/2969033.2969173 %} and the RNN encoder-decoder model with attention from {% cite DBLP:journals/corr/BahdanauCB14 %}, evaluate it on the English to French translation task of the {% cite bojar-etal-2014-findings %} (WMT'14) dataset, and compare results to the papers.
 
 ### Dataset
 
@@ -752,7 +837,7 @@ English:
 
 I used an encoder-decoder model using a GRU in both the encoder and decoder. The encoder is bidirectional. The hidden state size in the forward and backward directions of the encoder is $$1000$$ and in the decoder is $$1000$$. The embedding dimensionality in both the encoder and decoder is $$1000$$. Both the encoder and decoder have $$4$$ layers. For attention, I used the scaled dot-product attention with $$d_v$$ equal to $$1000$$. The source vocab size and target vocab size were set to $$30,000$$. The models with attention and without attention contains ~$$189M$$ trainable params.
 
-For comparison, {% cite 10.5555/2969033.2969173 %} used bidirectional LSTM instead of GRU. The vocab sizes were much larger at $$160,000$$ for the source and $$80,000$$ for the target. Their model contain $$384M$$ params. To the best of my knowledge the attention model implemented is approximately equal to {% cite DBLP:journals/corr/BahdanauCB14 %}, but they leave out some implementation details, so I cannot say for sure.
+For comparison, {% cite 10.5555/2969033.2969173 %} used LSTM instead of GRU. The vocab sizes were much larger at $$160,000$$ for the source and $$80,000$$ for the target. Their model contain $$384M$$ params. To the best of my knowledge the attention model implemented is approximately equal to {% cite DBLP:journals/corr/BahdanauCB14 %}, but they leave out some implementation details, so I cannot say for sure.
 
 ### Training details
 
@@ -767,10 +852,10 @@ Results are reported on the WMT'14 test set which contained 3003 english-french 
 
 | Model                                                                   | Average BLEU score |
 |:------------------------------------------------------------------------|:-------------------|
-| With attention                                                          | 0.297              |
-| Without attention                                                       | 0.261              |
 | {% cite 10.5555/2969033.2969173 %} (Single reversed LSTM, beam size 12) | 0.306              |
+| With attention                                                          | 0.297              |
 | {% cite DBLP:journals/corr/BahdanauCB14 %} (RNNsearch-50*, All words)   | 0.285              |
+| Without attention                                                       | 0.261              |
 
 The model with attention achieved an overall higher average BLEU score than the model without attention.
 The model with attention achieved a better performance than {% cite DBLP:journals/corr/BahdanauCB14 %} (RNNsearch-50*, All words), 
@@ -779,15 +864,35 @@ while the model without attention achieved worse performance than {% cite 10.555
 Note that the model with attention, {% cite DBLP:journals/corr/BahdanauCB14 %} (RNNsearch-50*, All words), has a worse reported BLEU score than 
 {% cite 10.5555/2969033.2969173 %} (Single reversed LSTM, beam size 12).
 
-<figure style="text-align: center;">
-  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/attention_vs_no_attention_bleu.png" id="figure10">
-  <figcaption style="font-style: italic; color: gray;">Figure 10: Number of input tokens vs BLEU score for the model using attention and the model without attention on the WMT'14 test set.
+One of the key questions we wanted to answer was whether the model without attention
+suffers when the input lengths increase. The following figure compares BLEU score for the model with attention vs without as the input length increases.
+
+{% capture figure_content %}
+    <div id="attention_vs_no_attention_sent_len_plot_container" style="width: 100%"></div>
+    <script>
+        fetch("{{ '/assets/plotly/2024-10-03-sequence_to_sequence_translation/attention_vs_no_attention_sent_len.json' | relative_url }}")
+            .then(response => response.json())
+            .then(plotData => {
+                Plotly.newPlot('attention_vs_no_attention_sent_len_plot_container', plotData.data, plotData.layout);
+            })
+            .catch(error => {
+                console.error('Error loading Plotly data:', error);
+            });
+    </script>
+{% endcapture %}
+
+{% capture figure_caption %}
+Number of input tokens vs BLEU score for the model using attention and the model without attention on the WMT'14 test set.
 Both models showed increase in BLEU score as the number of input tokens increased. The scatter points are the actual BLEU score for each example, while the lines are lines of best fit to the data.
 Note that this figure agrees with {% cite 10.5555/2969033.2969173 %} 
 but disagrees with {% cite DBLP:journals/corr/BahdanauCB14 %} since the latter reports 
 a decrease in performance in non-attention model with an increase in number of tokens, whereas we don't see this trend.
-</figcaption>
-</figure>
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
 
 We are not able to reproduce a decrease in performance as the number of input tokens increases as {% cite DBLP:journals/corr/BahdanauCB14 %} and others showed. {% cite 10.5555/2969033.2969173 %} showed that their model without attention is robust to an increase in sentence length even without attention, which is the same trend we were able to reproduce.
 
@@ -797,6 +902,7 @@ Let's look at a few randomly chosen translations from the test set.
 
 
 #### example 1
+
 | Input | With attention Prediction | Without attention Prediction | Target
 |:--- | :--- | :--- |:--- |
 |California planners are looking to the system as they devise strategies to meet the goals laid out in the state's ambitious global warming laws.|Les planificateurs de la Californie se tournent vers le système lorsqu'ils élaborent des stratégies pour atteindre les objectifs énoncés dans les lois ambitieuses de l'État sur le réchauffement planétaire.|Les planificateurs californiens se tournent vers le système pour mettre au point des stratégies visant à atteindre les objectifs énoncés dans la législation ambitieuse du réchauffement de la planète.|Les planificateurs de Californie s'intéressent au système puisqu'ils élaborent des stratégies pour atteindre les objectifs fixés dans les lois ambitieuses de l'État sur le réchauffement climatique.
@@ -814,6 +920,7 @@ While I don't speak French, plugging in both predictions into Google Translate p
 Both are close, but the translation with attention is better as it produces <ins>the goals</ins> rather than <ins>goals</ins> and also the translation without attention misses the important phrase <ins>the state's</ins>. Also the word *legislation* is awkward and *laws* is better.
 
 #### example 2
+
 | Input | With attention Prediction | Without attention Prediction | Target
 |:--- | :--- | :--- |:--- |
 |"Despite losing in its attempt to acquire the patents-in-suit at auction, Google has infringed and continues to infringe," the lawsuit said.|"Malgré la perte dans sa tentative d'acquérir les brevets en cours d'enchère, Google a enfreint et continue de violer", a déclaré la poursuite.|"En dépit de sa perte dans l'acquisition des brevets en cours aux enchères, Google a enfreint et continue de violer", a-t-il poursuivi.|« Bien qu'ayant échoué dans sa tentative d'acquérir les brevets en cause au cours des enchères, Google a violé et continue à violer lesdits brevets », ont indiqué les conclusions du procès.
@@ -829,6 +936,7 @@ Both are close, but the translation with attention is better as it produces <ins
 We see a similar pattern as before. The model with attention pretty much gets it right, while the model without attention adds the word <ins>pending</ins> to *patent auction* which is incorrect, and ends with <ins>he continued</ins> which is incorrect and should be *the lawsuit said*. 
 
 #### example 3
+
 | Input | With attention Prediction | Without attention Prediction | Target
 |:--- | :--- | :--- |:--- |
 |He also said that a woman and child had been killed in fighting the previous evening and had been buried.|Il a également déclaré qu'une femme et un enfant avaient été tués dans les combats de la soirée précédente et avaient été enterrés.|Il a également déclaré qu'une femme et un enfant avaient été tués au cours de la nuit précédente et avaient été enterrés.|Selon lui, une femme et son enfant ont été tués par les combats de la veille et ont été enterrées.
@@ -848,29 +956,30 @@ The model with attention gets it right while the model without attention misses 
 Attention, as described above, give the decoder the ability to give different weights to different tokens in the input.
 We can inspect these weights to understand better which input tokens each decoding timestep is "paying attention to".
 
-<figure style="text-align: center;">
-    <div id="attention_weights_plot_container" style="width: 100%; height: 1300px;"></div>
+{% capture figure_content %}
+    <div id="attention_weights_plot_container" style="width: 100%"></div>
     <script>
-        fetch("{{ '/assets/plotly/2024-10-03-sequence_to_sequence_translation/attention_weights.html' | relative_url }}")
-            .then(response => {
-                if(!response.ok) {
-                    throw new Error('Failed to load plotly html');
-                }
-                return response.text();
-            })
-            .then(htmlContent => {
-                document.getElementById('attention_weights_plot_container').innerHTML = htmlContent;
+        fetch("{{ '/assets/plotly/2024-10-03-sequence_to_sequence_translation/attention_weights.json' | relative_url }}")
+            .then(response => response.json())
+            .then(plotData => {
+                Plotly.newPlot('attention_weights_plot_container', plotData.data, plotData.layout);
             })
             .catch(error => {
-                console.error('Error loading Plotly HTML:', error);
+                console.error('Error loading Plotly data:', error);
             });
     </script>
-    <figcaption style="font-style: italic; color: gray;">
-        Figure 12: Attention weights for 4 randomly chosen examples in the WMT'14 test set with input lengths between 10 and 20 tokens.
-        The model output tokens are on the horizontal axis and the input tokens on the vertical.
-        The value of each cell indicates how strongly a given decoding timestep "paid attention to" a given input token.
-    </figcaption>
-</figure>
+{% endcapture %}
+
+{% capture figure_caption %}
+Attention weights for 4 randomly chosen examples in the WMT'14 test set with input lengths between 10 and 20 tokens.
+The model output tokens are on the horizontal axis and the input tokens on the vertical.
+The value of each cell indicates how strongly a given decoding timestep "paid attention to" a given input token.
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
 
 Above is a figure showing 4 randomly chosen examples from the WMT'14 test set which have input lengths between 10 and 20 tokens.
 We can see that the attention weights are mostly linear.
@@ -879,17 +988,19 @@ and at timestep $$2$$ the model most strongly pays attention to _\_why_ to produ
 
 However there are deviations from this. For example in the bottom left subplot we can see that
 the english phrase _phone calls_ gets translated to the french _appels téléphoniques_, which literally
-translates to calls _phone_, and we can see that when outputting _appels_, the input token _calls_ 
+translates to _calls phone_, and we can see that when outputting _appels_, the input token _calls_ 
 is most strongly paid attention to, while when outputting _téléphoniques_, _phone_ is most strongly paid attention to.
 
 Sometimes, we can see that a given token in the input is paid attention to by multiple timesteps in the decoder.
 For example, in the bottom right subplot we can see that the input _returned_ is paid attention to 
-by the phrase _les gens sont revenus_ or in english _the people returned_. So in addition to 
-the obvious token _returned_ the model is paying attention to the phrase it is used in.
+by the phrase _les gens sont revenus_ or in english _the people returned_. So in addition to paying attention
+to _revenus_ when outputting the literal translation _returned_, the model is paying attention to 
+_returned_ when outputting the entire phrase _les gens sont revenus_. This shows that the 
+surrounding phrase is helpful here.
 
 We can see another case where the model outputs multiple tokens which maps to a single input token.
-In the top left subplot the english _\_authority_ gets mapped to the output tokens, _\_l_, _'_, _\_autorité_ and 
-we can see that all 3 output tokens pay attention to the input _\_authority_.
+In the top left subplot the output tokens, _\_l_, _'_, _\_autorité_ all pay attention to the input token _\_authority_, and 
+which is a good property since _authority_ gets split up into the 3 french tokens _l, ', _autorité_.
 
 
 ### Failure mode examples
@@ -986,10 +1097,19 @@ During development of the model I experienced a strange issue that took all day 
 When training we construct minibatches to parallelize the computation. We must pass a single tensor to the model, and so all sequences must be made to be the same length. This means that if the sequences are different lengths, then we need to add a special token to any sequence which is shorter than the longest sequence.
 
 Let's say we had this minibatch:
-<figure style="text-align: center;">
+
+{% capture figure_content %}
   <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/padding.png" style="width: 80%">
-  <figcaption style="font-style: italic; color: gray;">Figure 12: Example minibatch with padding</figcaption>
-</figure>
+{% endcapture %}
+
+{% capture figure_caption %}
+ Example minibatch with padding
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
 
 The 3 padding tokens in the 1st sequence are required because the 1st sequence is shorter than the 2nd sequence.
 
@@ -1052,11 +1172,23 @@ Hopefully all this effort to ignore the pad token works and the model is insensi
 
 In the following example we randomly sample a test example, check the output with no padding and compare it with the output with a randomly chosen number of pad tokens appended.
 
-{::nomarkdown}
-{% assign jupyter_path = 'assets/jupyter/2024-10-03-sequence_to_sequence_translation/padding.ipynb' | relative_url %}
-{% jupyter_notebook jupyter_path %}
-{:/nomarkdown}
-
+```
+input: Moore told reporters that the initial autopsy indicated Johnson died as a result of "positional asphyxia."
+output with no pad tokens appended to input == output with 42 pad tokens appended to input True
+===========
+input: "The alarms went off one after the other as it took reinforcements to deal with the building, because the buildings here are close together," explained France Loiselle, spokesperson for the Quebec fire service.
+output with no pad tokens appended to input == output with 13 pad tokens appended to input True
+===========
+input: Rehousing Due to Rats Causes Strife in La Seyne
+output with no pad tokens appended to input == output with 29 pad tokens appended to input True
+===========
+input: I see her eyes resting on me.
+output with no pad tokens appended to input == output with 26 pad tokens appended to input True
+===========
+input: Moreover, Kiev needs liquid assets to pay for its gas imports from Russia, which accuses it of not having paid a bill of 882 million dollars.
+output with no pad tokens appended to input == output with 3 pad tokens appended to input True
+===========
+```
 
 Great, the model seems to be ignoring the pad tokens!
 
@@ -1091,11 +1223,29 @@ The above results shown [figure 10](#figure10) are using beam search using a bea
 
 We can see from the figure below that beam search in general improves performance compared to greedy, but also produces a translation of equivalent quality to greedy more generally and sometimes worse. Beam search also takes significantly longer to run.
 
-<figure style="text-align: center;">
-  <img src="/assets/img/2024-06-22-sequence_to_sequence_translation/beam_search_diff.png">
-  <figcaption style="font-style: italic; color: gray;">Figure 11: Impact of beam search on BLEU score. 
-The histogram shows slight overall improvement in BLEU score when beam search is used.</figcaption>
-</figure>
+{% capture figure_content %}
+    <div id="beam_search_plot_container" style="width: 100%"></div>
+    <script>
+        fetch("{{ '/assets/plotly/2024-10-03-sequence_to_sequence_translation/beam_search.json' | relative_url }}")
+            .then(response => response.json())
+            .then(plotData => {
+                Plotly.newPlot('beam_search_plot_container', plotData.data, plotData.layout);
+            })
+            .catch(error => {
+                console.error('Error loading Plotly data:', error);
+            });
+    </script>
+{% endcapture %}
+
+{% capture figure_caption %}
+Impact of beam search on BLEU score. 
+The histogram shows slight overall improvement in BLEU score when beam search is used.
+{% endcapture %}
+
+{% include figure.html
+    content=figure_content
+    caption=figure_caption
+%}
 
 ##### beam search example
 
@@ -1230,13 +1380,36 @@ What is the model's output?
 
 However, this shows that we can output something rather than `<UNK>`.
 
+### Mixed precision training
+
+The default datatype for network operations in pytorch is `torch.float32`.
+
+However, it turns out that most deep learning operations don't require this much precision,
+and `float16` would suffice. But not all operations can use the lower precision, which is why pytorch and the GPU know how to do some operations using `float32` and some with `float16`. That is why it is called _mixed precision_.
+
+This is a good thing that we don't need to always use `float32` since `float16` takes up less memory 
+than `float32`, which allows the GPU to access the data quicker and allows us to use larger batch sizes.
+See [this article](https://pytorch.org/blog/accelerating-training-on-nvidia-gpus-with-pytorch-automatic-mixed-precision/) which shows that
+using mixed precision training achieves the same accuracy as `float32` and shows that mixed precision training ran 2-5 times faster.
+
+In my experiments using the Nvidia V100 GPUs, training on `float32` took `1.80s/batch` while training with `float16` took `0.99s/batch`, which matches what the PyTorch article above reported.
+
+This is great, since it means that training time is cut down by half.
+
+
+
 
 ## Conclusion
 
-We implemented an RNN model without attention similar to {% cite 10.5555/2969033.2969173 %} and a model with attention similar to {% cite DBLP:journals/corr/BahdanauCB14 %} and found that the model with attention has better overall performance than the model without attention as evaluated by the BLEU score. However, {% cite DBLP:journals/corr/BahdanauCB14 %} reports a steep decrease in BLEU score as the sentence length increases, which we were not able to reproduce. Our results are in line with {% cite 10.5555/2969033.2969173 %} which reported that the model without attention is robust to sentence length, but the paper that introduced attention is seen as a "paradigm shift" paper that introduced attention, so the community saw value in the attention mechanism though the reported performance in the paper is not as good as previous papers.
+We implemented an RNN model without attention similar to {% cite 10.5555/2969033.2969173 %} and a model with attention similar to {% cite DBLP:journals/corr/BahdanauCB14 %} and found that the model with attention has better overall performance than the model without attention as evaluated by the BLEU score on the 3003 test set examples in the WMT'14 dataset. However, {% cite DBLP:journals/corr/BahdanauCB14 %} reports a steep decrease in BLEU score as the sentence length increases, which we were not able to reproduce. Our results are in line with {% cite 10.5555/2969033.2969173 %} which reported that the model without attention is robust to sentence length, but the paper that introduced attention is seen as a "paradigm shift" paper that introduced attention, so the community saw value in the attention mechanism though the reported performance in the paper is not as good as previous papers.
 
 Researchers ran with the idea of attention, and developed the transformer architecture, which forms the backbone of SOTA "language models" such as the GPT series.
 
 Also of note that at the time, non-deep-learning based methods such as Moses, showed better performance on the translation task, but clearly the community invested more effort in deep learning based methods. The transformer model paid off and is significantly more influential than just in doing translation, which Moses is only capable of doing.
+
+Importantly, the problem of translation is used, as these papers were focused on, 
+but learning to translate is actually similar to learning to take in an arbitrary sequence and output an arbitrary sequence,
+which for example chatbots, image generators, video generators, etc need to do. So 
+the applications of this research are more applicable than just to the problem of translation.
 
 Next, we'll build on language models and implement a transformer model rather than an RNN model.
