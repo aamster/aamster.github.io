@@ -7,6 +7,7 @@ scholar:
 toc:
     sidebar: left
 related_publications: true
+giscus_comments: true
 ---
 
 In this article, I'll introduce language modeling using deep learning and will focus on the problem of translation.
