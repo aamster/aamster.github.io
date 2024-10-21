@@ -1,0 +1,19 @@
+{% if figure_counter == null %}
+    {% assign figure_counter = 0 %}
+{% endif %}
+
+<!-- Increment the figure counter first -->
+{% assign figure_counter = figure_counter | plus: 1 %}
+
+<!-- Assign the figure ID, prioritizing the include.id -->
+{% if include.id %}
+    {% assign figure_id = include.id %}
+{% else %}
+    {% assign figure_id = 'figure-' | append: figure_counter %}
+{% endif %}
+
+<!-- Render the figure -->
+<figure id="{{ figure_id }}" style="text-align: center;">
+    {{ include.content }}
+    <figcaption>Figure {{ figure_counter }}: {{ include.caption }}</figcaption>
+</figure>
