@@ -1,0 +1,6 @@
+<div class="note-box">
+  {% if include.title %}
+    <strong>{{ include.title }}</strong><br>
+  {% endif %}
+  {{ include.content | markdownify }}
+</div>
