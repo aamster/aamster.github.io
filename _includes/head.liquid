@@ -39,11 +39,6 @@
   id="highlight_theme_light"
 >
 
-{% if page.toc and page.toc.sidebar %}
-  <!-- Sidebar Table of Contents -->
-  <link defer href="{{ '/assets/css/bootstrap-toc.min.css' | relative_url | bust_file_cache }}" rel="stylesheet">
-{% endif %}
-
 <!-- Styles -->
 
 <!-- pseudocode -->
@@ -148,4 +143,14 @@
   <link defer rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
 {% endif %}
 
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.32.2/tocbot.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.32.2/tocbot.css">
+
+<style>
+  /* Hide Tocbot list bullets entirely */
+  .toc-list-item {
+    list-style: none
+  }
+</style>

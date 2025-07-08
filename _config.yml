@@ -308,8 +308,7 @@ scholar:
   style: apa
   locale: en
 
-  source: /_bibliography/
-  bibliography: papers.bib
+  source: ./_bibliography
   bibliography_template: bib
   # Note: if you have latex math in your bibtex, the latex filter
   # preprocessing may conflict with MathJAX if the latter is enabled.
@@ -323,8 +322,7 @@ scholar:
   details_link: Details
 
   query: "@*"
-  group_by: year
-  group_order: descending
+
 
 # Display different badges withs stats for your publications
 # Customize badge behavior in _layouts/bib.liquid

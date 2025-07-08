@@ -1414,3 +1414,5 @@ which for example chatbots, image generators, video generators, etc need to do. 
 the applications of this research are more applicable than just to the problem of translation.
 
 Next, we'll build on language models and implement a transformer model rather than an RNN model.
+
+# References
