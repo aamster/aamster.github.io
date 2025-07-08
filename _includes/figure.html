@@ -15,5 +15,7 @@
 <!-- Render the figure -->
 <figure id="{{ figure_id }}" style="text-align: center;">
     {{ include.content }}
-    <figcaption>Figure {{ figure_counter }}: {{ include.caption }}</figcaption>
+    {% if include.caption %}
+        <figcaption>Figure {{ figure_counter }}: {{ include.caption }}</figcaption>
+    {% endif %}
 </figure>

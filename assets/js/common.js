@@ -17,20 +17,14 @@ $(document).ready(function () {
   });
   $("a").removeClass("waves-effect waves-light");
 
-  // bootstrap-toc
-  if ($("#toc-sidebar").length) {
-    // remove related publications years from the TOC
-    $(".publications h2").each(function () {
-      $(this).attr("data-toc-skip", "");
-    });
-    var navSelector = "#toc-sidebar";
-    var $myNav = $(navSelector);
-    Toc.init($myNav);
-    $("body").scrollspy({
-      target: navSelector,
-      offset: 80
-    });
-  }
+  tocbot.init({
+  // Where to render the table of contents.
+  tocSelector: '#toc-sidebar',
+  // Where to grab the headings to build the table of contents.
+  contentSelector: '.post-content',
+  // Which headings to grab inside of the contentSelector element.
+  headingSelector: 'h1, h2, h3, h4, h5'
+});
 
   // add css to jupyter notebooks
   const cssLink = document.createElement("link");
