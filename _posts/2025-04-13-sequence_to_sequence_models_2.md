@@ -46,6 +46,8 @@ In [Weaknesses of RNN architecture](#weaknesses-of-rnn-architectures) I'll motiv
 
 For this post, it helps if you have read [the previous post](https://aamster.github.io/blog/2024/sequence_to_sequence_models_1/) or are already familiar with this topic.
 
+All code/trained weights, data for this post can be accessed [here](https://github.com/aamster/seq2seq-translation?tab=readme-ov-file#translation-using-deep-neural-networks---transformer-part-2)
+
 # Weaknesses of RNN architecture
 
 ## sequential processing
