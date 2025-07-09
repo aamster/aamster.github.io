@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Translation using deep neural networks (part 1)
+title: Translation using deep neural networks - RNN (part 1)
 tags: ["deep learning", "rnn", "machine translation", "sequences", "attention"]
 scholar:
     bibliography: 2024-10-03-sequence_to_sequence_translation.bib

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Translation using deep neural networks (part 2)
+title: Translation using deep neural networks - Transformer (part 2)
 tags: ["deep learning", "transformer", "machine translation", "sequences"]
 scholar:
   bibliography: "2025-04-13-sequence_to_sequence_translation_2.bib"
